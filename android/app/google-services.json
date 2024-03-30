@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "262611663870",
+    "project_id": "todohub-f762d",
+    "storage_bucket": "todohub-f762d.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:262611663870:android:ce047249dfbface76d9eaf",
+        "android_client_info": {
+          "package_name": "com.frontend"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "262611663870-2rsfvr4hv076m1hgmtukes9lgg3g8gf9.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAtPxA4ypStKZ4y5Q0xCkxHH5qi97usZ1A"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "262611663870-2rsfvr4hv076m1hgmtukes9lgg3g8gf9.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
