@@ -6,7 +6,7 @@ import {Portal} from 'react-native-portalize';
 import {ButtonTextComponent, RowComponent, TextComponent} from '.';
 import {globalStyles} from '../assets/styles/globalStyle';
 import {colors, fontFamily, priorityList} from '../constants';
-import {PriorityType} from '../types/priorityType';
+import {PriorityType} from '../types/priority';
 
 interface Props {
   label?: string;

@@ -15,6 +15,7 @@ import {
 import ImageCropPicker, {ImageOrVideo} from 'react-native-image-crop-picker';
 import {Modalize} from 'react-native-modalize';
 import {Portal} from 'react-native-portalize';
+import {userApi} from '../../apis';
 import {
   AvatarComponent,
   ButtonTextComponent,
@@ -65,7 +66,7 @@ const ProfileScreen = () => {
     switch (key) {
       case 'camera':
         ImageCropPicker.openCamera({mediaType: 'photo', cropping: true}).then(
-          res => console.log('res >> ', res),
+          file => handleUploadStogare(file),
         );
         break;
       case 'library':
@@ -97,17 +98,32 @@ const ProfileScreen = () => {
         .ref(path)
         .getDownloadURL()
         .then(url => {
-          console.log('object :>> ', url);
+          handleUpdateAvatar(url);
         });
     });
     res.catch(() => {
       console.log('Lỗi khi tải lên storage');
     });
   };
+  const handleUpdateAvatar = async (url: string) => {
+    if (dataAuth.userId) {
+      try {
+        const res = await userApi.updateAvatar(dataAuth.userId, {avatar: url});
+        if (res.success === true) {
+        } else {
+        }
+      } catch (error) {
+        console.log('error :>> ', error);
+      }
+    }
+  };
   const handleLogout = async () => {
     await removeItem();
     dispatch(removeAuth());
   };
+  if (!dataAuth) {
+    return null;
+  }
   return (
     <>
       <ContainerComponent back title="Tài khoản">
@@ -221,7 +237,7 @@ const ProfileScreen = () => {
               />
               <ButtonTextComponent
                 title="Thêm"
-                onPress={() => {}}
+                onPress={() => handleUpdateAvatar(imageUrl)}
                 textColor={colors.white}
               />
             </RowComponent>

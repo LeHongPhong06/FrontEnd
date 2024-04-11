@@ -1,4 +1,4 @@
-import {Call, Sms, User} from 'iconsax-react-native';
+import {Call, User} from 'iconsax-react-native';
 import React, {useState} from 'react';
 import {StyleSheet} from 'react-native';
 import {
@@ -10,23 +10,32 @@ import {
 } from '../../components';
 import {colors} from '../../constants';
 import {useAppSelector} from '../../hooks/useRedux';
+import {userApi} from '../../apis';
 
 const AccountScreen = () => {
   const {dataAuth} = useAppSelector(state => state.auth);
   const initialValues = {
     fullName: dataAuth.fullName,
-    email: dataAuth.email,
     phoneNumber: dataAuth.phoneNumber,
   };
   const [userValue, setUserValue] = useState(initialValues);
-  const {fullName, email, phoneNumber} = userValue;
+  const {fullName, phoneNumber} = userValue;
   const handleChangeValues = (key: string, value: string) => {
     const data: any = {...userValue};
     data[`${key}`] = value;
     setUserValue(data);
   };
-  const handleConfirmChangeProfile = () => {
-    console.log('object :>> ', userValue);
+  const handleConfirmChangeProfile = async () => {
+    if (dataAuth.userId) {
+      try {
+        const res = await userApi.updateInfo(dataAuth.userId, userValue);
+        if (res.success === true) {
+        } else {
+        }
+      } catch (error) {
+        console.log('error :>> ', error);
+      }
+    }
   };
   return (
     <ContainerComponent title="Thay đổi thông tin cá nhân" back>
@@ -42,13 +51,6 @@ const AccountScreen = () => {
           affix={<User size={22} color={colors.gray5} />}
           value={fullName}
           onChange={val => handleChangeValues('fullName', val)}
-        />
-        <InputComponent
-          allowClear
-          placeholder="example@gmail.com"
-          affix={<Sms size={22} color={colors.gray5} />}
-          value={email}
-          onChange={val => handleChangeValues('email', val)}
         />
         <InputComponent
           allowClear

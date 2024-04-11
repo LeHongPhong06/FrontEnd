@@ -16,7 +16,10 @@ const RootRouter = () => {
   }, []);
   const checkLogin = async () => {
     const auth = await getItem();
-    auth && dispatch(addAuth(JSON.parse(auth)));
+    if (auth) {
+      const data = JSON.parse(auth);
+      auth && dispatch(addAuth(data));
+    }
   };
   const {dataAuth} = useAppSelector(state => state.auth);
   useEffect(() => {
@@ -26,7 +29,7 @@ const RootRouter = () => {
     return () => clearTimeout(timeSplash);
   }, []);
   const Router = () => {
-    return dataAuth.access_token ? <MainNavigator /> : <AuthNavigator />;
+    return dataAuth?.access_token ? <MainNavigator /> : <AuthNavigator />;
   };
   return hideSlapsh ? <SplashScreen /> : <Router />;
 };

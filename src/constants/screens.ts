@@ -18,4 +18,5 @@ export const screens = {
   FORGOTPASSWORD_SCREEN: 'forgotpasword_screen',
   VERIFICATION_SCREEN: 'verification_screen',
   UPDATEWORKPLACE_SCREEN: 'updateworkplace_screen',
+  EDITWORK_SCREEN: 'editwork_screen',
 };

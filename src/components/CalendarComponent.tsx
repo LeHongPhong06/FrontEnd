@@ -102,7 +102,7 @@ const CalendarComponent = (props: Props) => {
             <CircleComponent height={6} width={6} bgColor={colors.primary} />
             <TextComponent text={'Ngày chọn'} size={13} />
           </RowComponent>
-        </RowComponent> 
+        </RowComponent>
       </SectionComponent>
     </>
   );

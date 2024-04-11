@@ -1,39 +1,57 @@
+import {ProjectType} from '../types';
 import instance from './instance';
 
 export const projectApi = {
-  getAll: async () => {
-    const url = 'project';
+  getAll: async (search: string, page: number): Promise<ProjectType[]> => {
+    const url = `project?limit=10&page=${page}&search=${search}`;
     try {
       const res = await instance.get(url);
-      return res.data();
+      if (res.data && res.data.success === true) {
+        return res.data.data.items;
+      } else {
+        return [];
+      }
     } catch (error: any) {
       throw new Error(error);
     }
   },
 
-  getProjectById: async (projectId: string) => {
+  getProjectById: async (
+    projectId: string,
+  ): Promise<ProjectType | undefined> => {
     const url = `project/${projectId}`;
     try {
       const res = await instance.get(url);
-      return res.data();
+      if (res.data && res.data.success === true) {
+        return res.data.data;
+      }
     } catch (error: any) {
-      throw new Error(error);
+      throw error;
     }
   },
   createProject: async (payload: any) => {
     const url = 'project/create';
     try {
       const res = await instance.post(url, payload);
-      return res.data();
+      return res.data;
     } catch (error: any) {
       throw new Error(error);
     }
   },
-  updateProject: async (projectId: string, payload: any) => {
+  updateProject: async (projectId: string, payload: any): Promise<any> => {
     const url = `project/update/${projectId}`;
     try {
-      const res = await instance.put(url, payload);
-      return res.data();
+      const res = await instance.patch(url, payload);
+      return res.data;
+    } catch (error: any) {
+      throw new Error(error);
+    }
+  },
+  deleteProject: async (projectId: string) => {
+    const url = `project/delete/${projectId}`;
+    try {
+      const res = await instance.delete(url);
+      return res.data;
     } catch (error: any) {
       throw new Error(error);
     }

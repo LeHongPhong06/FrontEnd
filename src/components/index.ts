@@ -1,4 +1,5 @@
 import AvatarComponent from './AvatarComponent';
+import AvatarGroupComponent from './AvatarGroupComponent';
 import ButtonComponent from './ButtonComponent';
 import ButtonImagePickerComponent from './ButtonImagePickerComponent';
 import ButtonTextComponent from './ButtonTextComponent';
@@ -7,7 +8,7 @@ import CardComponent from './CardComponent';
 import CircleComponent from './CircleComponent';
 import ContainerAuthComponent from './ContainerAuthComponent';
 import ContainerComponent from './ContainerComponent';
-import DateTimePickerComponent from './DateTimePickerComponent';
+import DatePickerComponent from './DatePickerComponent';
 import DropdownPickerComponent from './DropdownPickerComponent';
 import DropdownSingleComponent from './DropdownSingleComponent';
 import InputComponent from './InputComponent';
@@ -26,22 +27,23 @@ import UploadFileComponent from './UploadFileComponent';
 
 export {
   AvatarComponent,
-  ContainerAuthComponent,
+  AvatarGroupComponent,
   ButtonComponent,
-  RadioButtonComponent,
-  ModalLoading,
   ButtonImagePickerComponent,
   ButtonTextComponent,
   CalendarComponent,
   CardComponent,
   CircleComponent,
+  ContainerAuthComponent,
   ContainerComponent,
-  DateTimePickerComponent,
+  DatePickerComponent,
   DropdownPickerComponent,
   DropdownSingleComponent,
   InputComponent,
+  ModalLoading,
   PieChartComponent,
   PriorityComponent,
+  RadioButtonComponent,
   RowComponent,
   SectionComponent,
   SocialLogin,

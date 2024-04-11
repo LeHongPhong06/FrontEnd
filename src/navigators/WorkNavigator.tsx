@@ -1,7 +1,7 @@
 import {createNativeStackNavigator} from '@react-navigation/native-stack';
 import React from 'react';
 import {screens} from '../constants';
-import {WorkDetailScreen, WorkListScreen} from '../screens';
+import {EditWorkScreen, WorkDetailScreen, WorkListScreen} from '../screens';
 
 const WorkNavigator = () => {
   const Stack = createNativeStackNavigator();
@@ -9,12 +9,14 @@ const WorkNavigator = () => {
     <Stack.Navigator
       screenOptions={{
         headerShown: false,
-      }}>
+      }}
+      initialRouteName={screens.WORKLIST_SCREEN}>
       <Stack.Screen name={screens.WORKLIST_SCREEN} component={WorkListScreen} />
       <Stack.Screen
         name={screens.WORKDETAIL_SCREEN}
         component={WorkDetailScreen}
       />
+      <Stack.Screen name={screens.EDITWORK_SCREEN} component={EditWorkScreen} />
     </Stack.Navigator>
   );
 };

@@ -11,13 +11,13 @@ import {deteleTask} from '../redux/silces/taskSlice';
 import {TaskType} from '../types';
 
 interface Props {
-  values: TaskType[];
+  value: TaskType[];
   userIdList: string[];
   label?: string;
   required?: boolean;
 }
 const TaskComponent = (props: Props) => {
-  const {label, required, userIdList, values} = props;
+  const {label, required, userIdList, value} = props;
   const dispatch = useAppDispatch();
   const navigation: any = useNavigation();
   const handleAddTask = () => {
@@ -49,15 +49,15 @@ const TaskComponent = (props: Props) => {
             <TextComponent text={label} size={14} styles={styles.label} />
           </RowComponent>
         )}
-        {values.length > 0 && (
+        {value.length > 0 && (
           <TouchableOpacity style={styles.btnAddTask} onPress={handleAddTask}>
             <Add size={17} color={colors.white} />
           </TouchableOpacity>
         )}
       </RowComponent>
-      {values.length > 0 ? (
+      {value.length > 0 ? (
         <RowComponent styles={styles.wapperItem} gap={8}>
-          {values.map((item: TaskType) => (
+          {value.map((item: TaskType) => (
             <RowComponent
               key={item.taskId}
               styles={styles.item}
@@ -95,7 +95,7 @@ const TaskComponent = (props: Props) => {
         <RowComponent
           styles={[globalStyles.inputContainer]}
           onPress={() => {
-            if (values.length === 0) {
+            if (value.length === 0) {
               handleAddTask();
             }
           }}>

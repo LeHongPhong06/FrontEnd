@@ -9,7 +9,8 @@ const AddWorkNavigator = () => {
     <Stack.Navigator
       screenOptions={{
         headerShown: false,
-      }}>
+      }}
+      initialRouteName={screens.ADDWORD_SCREEN}>
       <Stack.Screen name={screens.ADDWORD_SCREEN} component={AddWorkScreen} />
       <Stack.Screen name={screens.ADDTASK_SCREEN} component={AddTaskScreen} />
       <Stack.Screen name={screens.EDITTASK_SCREEN} component={EditTaskScreen} />

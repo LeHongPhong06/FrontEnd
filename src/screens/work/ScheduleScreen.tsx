@@ -7,10 +7,12 @@ import {
   SvgNotFoundComponent,
   TextComponent,
 } from '../../components';
+import {format} from 'date-fns';
 
 const ScheduleScreen = () => {
   const data: any = [];
   const [selected, setSelected] = useState('');
+  const dateSelect = new Date(selected) ?? Date.now();
   return (
     <ContainerComponent title="Lịch làm việc" back styles={styles.container}>
       <SectionComponent>
@@ -26,7 +28,9 @@ const ScheduleScreen = () => {
               <SvgNotFoundComponent
                 width={150}
                 height={150}
-                text={`Không có công việc nào trong ngày ${selected}`}
+                text={`Không có công việc nào trong ngày ${
+                  selected ? format(dateSelect, 'dd/MM/yyyy') : 'hôm nay'
+                }`}
               />
             </View>
           }

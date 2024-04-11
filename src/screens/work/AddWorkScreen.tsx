@@ -1,15 +1,24 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import storage from '@react-native-firebase/storage';
+import {useMutation, useQuery, useQueryClient} from '@tanstack/react-query';
 import dayjs from 'dayjs';
 import isSameOrAfter from 'dayjs/plugin/isSameOrAfter';
 import isSameOrBefore from 'dayjs/plugin/isSameOrBefore';
 import React, {useEffect, useState} from 'react';
-import {Alert, PermissionsAndroid, Platform, StyleSheet} from 'react-native';
+import {
+  Alert,
+  PermissionsAndroid,
+  Platform,
+  StyleSheet,
+  ToastAndroid,
+} from 'react-native';
 import {DocumentPickerResponse} from 'react-native-document-picker';
 import RNFetchBold from 'rn-fetch-blob';
+import {projectApi, userApi} from '../../apis';
 import {
   ButtonComponent,
   ContainerComponent,
-  DateTimePickerComponent,
+  DatePickerComponent,
   DropdownPickerComponent,
   InputComponent,
   ModalLoading,
@@ -22,11 +31,11 @@ import {
 } from '../../components';
 import {colors} from '../../constants';
 import {useAppSelector} from '../../hooks/useRedux';
-import {TaskType} from '../../types';
-import {PayloadFileType, ProgressFileType} from '../../types/uploadFile';
+import {Member, PayloadFileType, ProgressFileType, TaskType} from '../../types';
 dayjs.extend(isSameOrBefore);
 dayjs.extend(isSameOrAfter);
-const AddWorkScreen = () => {
+const AddWorkScreen = ({navigation}: any) => {
+  const queryClient = useQueryClient();
   const {dataAuth} = useAppSelector(state => state.auth);
   const {taskList} = useAppSelector(state => state.task);
   const initState = {
@@ -41,7 +50,6 @@ const AddWorkScreen = () => {
     member: [],
   };
   const [work, setWork] = useState(initState);
-  const [isLoading, setIsLoading] = useState(false);
   const [isDisableBtnAddWork, setIsDisableBtnAddWork] = useState(true);
   const [fileListPicker, setFileListPicker] = useState<
     DocumentPickerResponse[]
@@ -49,6 +57,28 @@ const AddWorkScreen = () => {
   const [progressUploadFile, setProgressUploadFile] =
     useState<ProgressFileType>();
   const isDateCorrect = dayjs(work.startDate).isSameOrBefore(work.endDate);
+  const {data, isLoading} = useQuery({
+    queryKey: ['getUserListByWorkplaceId'],
+    queryFn: () => {
+      if (dataAuth.workplaceId) {
+        return userApi.getUserAllByWorkplaceById(dataAuth.workplaceId);
+      }
+    },
+  });
+  const handleAddWork = useMutation({
+    mutationKey: ['createProject'],
+    mutationFn: () => projectApi.createProject(work),
+    onSuccess: res => {
+      if (res.success === true) {
+        queryClient.invalidateQueries({
+          queryKey: ['getProjectList'],
+        });
+        setWork(initState);
+        navigation.goBack();
+        ToastAndroid.show('Tạo mới công việc thành công', 2);
+      }
+    },
+  });
   useEffect(() => {
     if (Platform.OS === 'android') {
       PermissionsAndroid.requestMultiple([
@@ -57,11 +87,13 @@ const AddWorkScreen = () => {
       ]);
     }
   }, []);
-
+  useEffect(() => {
+    // handleGetUserList();
+    setWork(initState);
+  }, []);
   useEffect(() => {
     handleSetTaskListForWork();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [taskList.length]);
+  }, [taskList]);
   useEffect(() => {
     if (!isDateCorrect) {
       setIsDisableBtnAddWork(true);
@@ -74,7 +106,7 @@ const AddWorkScreen = () => {
   }, [isDateCorrect]);
   const handleChangeValueAddWork = (
     id: string,
-    val: string | Date | string[] | PayloadFileType | TaskType[],
+    val: string | Date | string[] | PayloadFileType | TaskType[] | Member[],
   ) => {
     const item: any = {...work};
     item[`${id}`] = val;
@@ -88,16 +120,16 @@ const AddWorkScreen = () => {
     }
   };
   const handleSetTaskListForWork = () => {
+    const dataTask: TaskType[] = [];
     if (taskList.length > 0) {
-      const data: TaskType[] = [];
       taskList.forEach(task => {
         const startDate = new Date(task.startDate);
         const endDate = new Date(task.endDate);
         const taskBeforeParse = {...task, startDate, endDate};
-        data.push(taskBeforeParse);
+        dataTask.push(taskBeforeParse);
       });
-      handleChangeValueAddWork('tasks', data);
     }
+    handleChangeValueAddWork('tasks', dataTask);
   };
   const handleUploadFileToStorage = () => {
     fileListPicker.forEach(async file => {
@@ -116,8 +148,12 @@ const AddWorkScreen = () => {
           .ref(path)
           .getDownloadURL()
           .then(url => {
-            const data = {name: file.name ?? '', url, size: file.size ?? 0};
-            handleChangeValueAddWork('documents', data);
+            const dataImagePicker = {
+              name: file.name ?? '',
+              url,
+              size: file.size ?? 0,
+            };
+            handleChangeValueAddWork('documents', dataImagePicker);
           });
       });
       res.catch(() => {
@@ -125,29 +161,10 @@ const AddWorkScreen = () => {
       });
     });
   };
-  const handleSelectFile = (files: DocumentPickerResponse[]) => {
-    setFileListPicker(files);
-  };
-  const handleAddWork = () => {
-    work.tasks.forEach((item: TaskType) => {
-      const isDateStartTask =
-        dayjs(item.startDate).isSameOrBefore(work.startDate, 'day') &&
-        dayjs(item.startDate).isSameOrBefore(work.endDate, 'day');
-      const isDateEndTask =
-        dayjs(item.startDate).isSameOrBefore(work.startDate, 'day') &&
-        dayjs(item.startDate).isSameOrBefore(work.endDate, 'day');
-      if (!isDateStartTask || !isDateEndTask) {
-        return Alert.alert(
-          'Thất bại',
-          'Thời gian việc cần làm không nằm trong khoảng thời gian tạo công việc. Vui lòng thử lại',
-          [{text: 'Đóng', style: 'cancel'}],
-        );
-      } else {
-        setIsLoading(true);
-        handleUploadFileToStorage();
-      }
-    });
-  };
+
+  if (!data) {
+    return <ModalLoading isVisable={isLoading} />;
+  }
   return (
     <>
       <ContainerComponent back title="Tạo công việc" isScroll>
@@ -174,7 +191,7 @@ const AddWorkScreen = () => {
             onSelect={val => handleChangeValueAddWork('priority', val)}
           />
           <RowComponent gap={20} align="center">
-            <DateTimePickerComponent
+            <DatePickerComponent
               required
               value={work.startDate}
               lable="Ngày bắt đầu"
@@ -182,7 +199,7 @@ const AddWorkScreen = () => {
               placeholder="Chọn ngày"
               onSelect={val => handleChangeValueAddWork('startDate', val)}
             />
-            <DateTimePickerComponent
+            <DatePickerComponent
               required
               value={work.endDate}
               lable="Ngày kết thúc"
@@ -192,6 +209,7 @@ const AddWorkScreen = () => {
             />
           </RowComponent>
           <DropdownPickerComponent
+            listPicker={data}
             required
             value={work.member}
             onSelect={val => handleChangeValueAddWork('member', val)}
@@ -199,24 +217,24 @@ const AddWorkScreen = () => {
           />
           <UploadFileComponent
             label="Tài liệu"
-            onUpload={files => handleSelectFile(files)}
+            onUpload={files => setFileListPicker(files)}
           />
           <TaskComponent
             required
-            values={work.tasks}
+            value={work.tasks}
             label="Những việc cần làm"
             userIdList={work.member}
           />
           <ButtonComponent
             disable={isDisableBtnAddWork}
             title="Tạo công việc"
-            onPress={handleAddWork}
+            onPress={() => handleAddWork.mutate()}
             textStyles={styles.textBtnAddWork}
           />
         </SectionComponent>
       </ContainerComponent>
       <ModalLoading
-        isVisable={isLoading}
+        isVisable={false}
         text={progressUploadFile ? 'Đang tải ảnh...' : 'Đang tải...'}
         contentLoad={
           <RowComponent direction="column" gap={4} align="flex-start">

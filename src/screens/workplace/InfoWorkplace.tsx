@@ -1,26 +1,44 @@
 import Clipboard from '@react-native-clipboard/clipboard';
 import {useNavigation} from '@react-navigation/native';
+import {useQuery} from '@tanstack/react-query';
 import {Setting2} from 'iconsax-react-native';
 import React from 'react';
 import {Image, ScrollView, StyleSheet, ToastAndroid} from 'react-native';
+import {workplaceApi} from '../../apis';
 import {
   ButtonTextComponent,
   CircleComponent,
+  ModalLoading,
   RowComponent,
   SpaceComponent,
   TextComponent,
 } from '../../components';
 import {colors, fontFamily, screens} from '../../constants';
+import {useAppSelector} from '../../hooks/useRedux';
 
 const InfoWorkplace = () => {
   const navigation: any = useNavigation();
+  const {dataAuth} = useAppSelector(state => state.auth);
+  const {data, isLoading} = useQuery({
+    queryKey: ['getInfowWorkplace', dataAuth.workplaceId],
+    queryFn: () => {
+      if (dataAuth.workplaceId) {
+        return workplaceApi.getWorkplaceById(dataAuth.workplaceId);
+      }
+    },
+  });
   const handleCopyWorkplaceId = (workplaceId: string) => {
     Clipboard.setString(workplaceId);
     ToastAndroid.show('Đã copy mã bộ môn', 2);
   };
   const handleOnPressUpdateWorkPlace = () => {
-    navigation.navigate(screens.UPDATEWORKPLACE_SCREEN);
+    navigation.navigate(screens.UPDATEWORKPLACE_SCREEN, {
+      workplaceInfo: {logo: data?.logo, name: data?.name},
+    });
   };
+  if (!data) {
+    return <ModalLoading isVisable={isLoading} />;
+  }
   return (
     <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
       <RowComponent
@@ -31,12 +49,14 @@ const InfoWorkplace = () => {
         <Image
           style={styles.logo}
           source={{
-            uri: 'https://images.pexels.com/photos/19245513/pexels-photo-19245513/free-photo-of-dan-ong-di-d-o-may-nh-nhi-p-nh-gia.jpeg?auto=compress&cs=tinysrgb&w=600&lazy=load',
+            uri:
+              data.logo ??
+              'https://upload.wikimedia.org/wikipedia/commons/d/d1/Image_not_available.png',
           }}
         />
         <RowComponent direction="column" gap={8} align="center">
           <TextComponent
-            text="Khoa học máy tính"
+            text={data.name}
             uppercase
             font={fontFamily.semibold}
           />

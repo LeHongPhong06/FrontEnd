@@ -6,16 +6,17 @@
  */
 
 import {NavigationContainer} from '@react-navigation/native';
+import {QueryClient, QueryClientProvider} from '@tanstack/react-query';
+import dayjs from 'dayjs';
+import 'dayjs/locale/vi';
 import React from 'react';
 import {StatusBar, StyleSheet} from 'react-native';
 import {GestureHandlerRootView} from 'react-native-gesture-handler';
 import {Host} from 'react-native-portalize';
-import RootRouter from './src/routers/RootRouter';
 import {Provider} from 'react-redux';
 import store from './src/redux/store';
-import 'dayjs/locale/vi';
-import dayjs from 'dayjs';
-
+import RootRouter from './src/routers/RootRouter';
+const queryClient = new QueryClient();
 function App(): React.JSX.Element {
   dayjs.locale('vi');
   return (
@@ -28,9 +29,11 @@ function App(): React.JSX.Element {
         />
         <Host>
           <NavigationContainer>
-            <Provider store={store}>
-              <RootRouter />
-            </Provider>
+            <QueryClientProvider client={queryClient}>
+              <Provider store={store}>
+                <RootRouter />
+              </Provider>
+            </QueryClientProvider>
           </NavigationContainer>
         </Host>
       </GestureHandlerRootView>

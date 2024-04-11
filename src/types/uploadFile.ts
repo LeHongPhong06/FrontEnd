@@ -1,5 +1,5 @@
 export interface ProgressFileType {
-  name: string;
+  name?: string;
   transfer: number;
   total: number;
 }

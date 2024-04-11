@@ -1,4 +1,5 @@
-import {StyleSheet, Image} from 'react-native';
+/* eslint-disable react-native/no-inline-styles */
+import {StyleSheet, Image, StyleProp, ImageStyle} from 'react-native';
 import React from 'react';
 import {colors} from '../constants';
 import {User} from 'iconsax-react-native';
@@ -6,18 +7,22 @@ import {RowComponent} from '.';
 
 interface Props {
   url?: string;
-  size?: number;
+  style?: StyleProp<ImageStyle>;
+  size: number;
 }
 const AvatarComponent = (props: Props) => {
-  const {url, size} = props;
+  const {url, size, style} = props;
   return url ? (
     <Image
-      style={{
-        resizeMode: 'cover',
-        width: size ?? 24,
-        height: size ?? 24,
-        borderRadius: 999,
-      }}
+      style={[
+        {
+          resizeMode: 'cover',
+          width: size ?? 24,
+          height: size ?? 24,
+          borderRadius: 999,
+        },
+        style,
+      ]}
       source={{
         uri: url,
       }}

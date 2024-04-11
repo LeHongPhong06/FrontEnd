@@ -1,128 +1,127 @@
-import {TouchableOpacity, StyleSheet, FlatList} from 'react-native';
+import {useNavigation} from '@react-navigation/native';
+import {useQuery, useQueryClient} from '@tanstack/react-query';
+import {ArrowRight2, SearchNormal1, UserAdd} from 'iconsax-react-native';
 import React, {useState} from 'react';
+import {
+  FlatList,
+  RefreshControl,
+  StyleSheet,
+  TouchableOpacity,
+  View,
+} from 'react-native';
+import {workplaceApi} from '../../apis';
+import {globalStyles} from '../../assets/styles/globalStyle';
 import {
   AvatarComponent,
   ButtonTextComponent,
   InputComponent,
   RowComponent,
+  SvgNotFoundComponent,
   TextComponent,
 } from '../../components';
 import {colors, fontFamily, screens} from '../../constants';
-import {ArrowRight2, SearchNormal1, UserAdd} from 'iconsax-react-native';
-import {useNavigation} from '@react-navigation/native';
-import {globalStyles} from '../../assets/styles/globalStyle';
+import {useAppSelector} from '../../hooks/useRedux';
 
 const TeacherList = () => {
   const navigation: any = useNavigation();
-  const [search, setSearch] = useState('');
-  const teacherList = [
-    {
-      id: 1,
-      name: 'Teacher 1',
-      phoneNumber: '0987654321',
-      email: 'teacher1@example.com',
-      avatar: '',
+  const {dataAuth} = useAppSelector(state => state.auth);
+  const initialQuery = {
+    search: '',
+    page: 1,
+    limit: 10,
+  };
+  const [query, setQuery] = useState(initialQuery);
+  const {data, isLoading, refetch} = useQuery({
+    queryKey: ['getTeacherListByWorkplaceId'],
+    queryFn: () => {
+      if (dataAuth.workplaceId) {
+        return workplaceApi.getTearcherList(dataAuth.workplaceId, query);
+      }
     },
-    {
-      id: 2,
-      name: 'Teacher 2',
-      phoneNumber: '0987654321',
-      email: 'teacher2@example.com',
-      avatar:
-        'https://images.pexels.com/photos/20359985/pexels-photo-20359985/free-photo-of-d-c-x-ly-b-ng-vsco-v-i-cai-d-t-tr-c-a6.jpeg?auto=compress&cs=tinysrgb&w=600&lazy=load',
-    },
-    {
-      id: 3,
-      name: 'Teacher 3',
-      phoneNumber: '0987654321',
-      email: 'teacher3@example.com',
-      avatar:
-        'https://images.pexels.com/photos/20359985/pexels-photo-20359985/free-photo-of-d-c-x-ly-b-ng-vsco-v-i-cai-d-t-tr-c-a6.jpeg?auto=compress&cs=tinysrgb&w=600&lazy=load',
-    },
-    {
-      id: 4,
-      name: 'Teacher 4',
-      phoneNumber: '0987654321',
-      email: 'teacher4@example.com',
-      avatar:
-        'https://images.pexels.com/photos/20359985/pexels-photo-20359985/free-photo-of-d-c-x-ly-b-ng-vsco-v-i-cai-d-t-tr-c-a6.jpeg?auto=compress&cs=tinysrgb&w=600&lazy=load',
-    },
-    {
-      id: 5,
-      name: 'Teacher 5',
-      phoneNumber: '0987654321',
-      email: 'teacher5@example.com',
-      avatar: '',
-    },
-    {
-      id: 6,
-      name: 'Teacher 6',
-      phoneNumber: '0987654321',
-      email: 'teacher6@example.com',
-      avatar:
-        'https://images.pexels.com/photos/20359985/pexels-photo-20359985/free-photo-of-d-c-x-ly-b-ng-vsco-v-i-cai-d-t-tr-c-a6.jpeg?auto=compress&cs=tinysrgb&w=600&lazy=load',
-    },
-    {
-      id: 7,
-      name: 'Teacher 7',
-      phoneNumber: '0987654321',
-      email: 'teacher7@example.com',
-      avatar: '',
-    },
-  ];
-  const handleOnPressItem = () => {
-    navigation.navigate(screens.INFOTEARCHERDETAIL_SCREEN);
+  });
+  const handleChangeQuery = (id: string, val: string | number) => {
+    const dataChange: any = {...query};
+    dataChange[`${id}`] = val;
+    setQuery(dataChange);
+  };
+  const handleOnPressItem = (userId: string) => {
+    navigation.navigate(screens.INFOTEARCHERDETAIL_SCREEN, {userId});
   };
   const handleAddTeacher = () => {
     navigation.navigate(screens.ADDTEACHER_SCREEN);
   };
   return (
-    <RowComponent styles={[styles.scrollContainer]}>
-      <FlatList
-        data={teacherList}
-        ListHeaderComponent={
-          <InputComponent
-            style={[styles.inputSearch]}
-            placeholder="Nhập tên hoặc email giảng viên"
-            affix={
-              <SearchNormal1
-                size={22}
-                color={search.length > 0 ? colors.primary : colors.gray5}
+    <>
+      <RowComponent styles={[styles.scrollContainer]}>
+        <FlatList
+          data={data}
+          refreshControl={
+            <RefreshControl
+              colors={[colors.primary]}
+              refreshing={isLoading}
+              onRefresh={refetch}
+            />
+          }
+          ListHeaderComponent={
+            <InputComponent
+              style={[styles.inputSearch]}
+              placeholder="Nhập tên hoặc email giảng viên"
+              affix={
+                <SearchNormal1
+                  size={22}
+                  color={
+                    query.search.length > 0 ? colors.primary : colors.gray5
+                  }
+                />
+              }
+              allowClear
+              value={query.search}
+              onChange={val => handleChangeQuery('search', val)}
+            />
+          }
+          keyExtractor={({userId}) => String(userId)}
+          showsVerticalScrollIndicator={false}
+          ListEmptyComponent={
+            <View style={styles.wapperNotFound}>
+              <SvgNotFoundComponent
+                width={250}
+                textSize={14}
+                height={250}
+                text="Không có giảng viên nào trong bộ môn"
               />
-            }
-            allowClear
-            value={search}
-            onChange={val => setSearch(val)}
-          />
-        }
-        keyExtractor={({id}) => String(id)}
-        showsVerticalScrollIndicator={false}
-        renderItem={({item}) => (
-          <TouchableOpacity
-            style={[styles.wapperItemTeacher, globalStyles.shadow]}
-            onPress={handleOnPressItem}>
-            <RowComponent gap={18} align="center">
-              <AvatarComponent url={item.avatar} size={62} />
-              <RowComponent direction="column" gap={3} flex={1}>
-                <TextComponent text={item.name} font={fontFamily.semibold} />
-                <RowComponent>
+            </View>
+          }
+          renderItem={({item}) => (
+            <TouchableOpacity
+              style={[styles.wapperItemTeacher, globalStyles.shadow]}
+              onPress={() => handleOnPressItem(item.userId)}>
+              <RowComponent gap={18} align="center">
+                <AvatarComponent url={item.avatar} size={62} />
+                <RowComponent direction="column" gap={3} flex={1}>
                   <TextComponent
-                    text={item.email}
+                    text={item.fullName}
+                    font={fontFamily.semibold}
+                  />
+                  <RowComponent>
+                    <TextComponent
+                      text={item.email}
+                      numberOfLines={1}
+                      size={12}
+                      color={colors.gray4}
+                    />
+                  </RowComponent>
+                  <TextComponent
+                    text={item.phoneNumber}
                     size={12}
                     color={colors.gray4}
                   />
                 </RowComponent>
-                <TextComponent
-                  text={item.phoneNumber}
-                  size={12}
-                  color={colors.gray4}
-                />
+                <ArrowRight2 color={colors.gray5} size={16} />
               </RowComponent>
-              <ArrowRight2 color={colors.gray5} size={16} />
-            </RowComponent>
-          </TouchableOpacity>
-        )}
-      />
+            </TouchableOpacity>
+          )}
+        />
+      </RowComponent>
       <ButtonTextComponent
         onPress={handleAddTeacher}
         title="Mời giảng viên"
@@ -130,7 +129,7 @@ const TeacherList = () => {
         textColor={colors.white}
         affix={<UserAdd size={18} color={colors.white} />}
       />
-    </RowComponent>
+    </>
   );
 };
 const styles = StyleSheet.create({
@@ -138,8 +137,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 9,
     paddingVertical: 8,
     position: 'absolute',
-    bottom: 48,
-    right: -10,
+    bottom: 0,
+    right: 5,
   },
   inputSearch: {
     marginBottom: 12,
@@ -147,6 +146,9 @@ const styles = StyleSheet.create({
   scrollContainer: {
     paddingTop: 10,
     paddingBottom: 38,
+  },
+  wapperNotFound: {
+    paddingVertical: 42,
   },
   wapperItemTeacher: {
     paddingVertical: 12,

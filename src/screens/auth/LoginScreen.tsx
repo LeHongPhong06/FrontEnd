@@ -44,6 +44,14 @@ const LoginScreen = () => {
       setIsDisabledLogin(true);
     }
   }, [email, password, isEmail, isLenghtPassword]);
+  // useEffect(() => {
+  //   handleRemoveItem();
+  // }, []);
+  // const handleRemoveItem = async () => {
+  //   try {
+  //     await AsyncStorage.removeItem('auth');
+  //   } catch (error) {}
+  // };
   const handleChangePayloadLogin = (id: string, value: string | boolean) => {
     const item: any = {...payloadLogin};
     item[`${id}`] = value;
@@ -57,15 +65,33 @@ const LoginScreen = () => {
   };
   const handlePressLogin = async () => {
     setIsLoadingLogin(true);
+    // try {
+    //   const response = await instance.post('auth/login', payloadLogin);
+    //   const res = await response.data;
+    //   if (res.success === true) {
+    //     const auth = JSON.stringify(res.data);
+    //     await AsyncStorage.setItem('auth', auth);
+    //     dispatch(addAuth(res.data));
+    //     setIsLoadingLogin(false);
+    //   } else {
+    //     setIsLoadingLogin(false);
+    //     Alert.alert('Thất bại', res.message, [
+    //       {
+    //         text: 'Đóng',
+    //         style: 'cancel',
+    //       },
+    //     ]);
+    //   }
+    // } catch (error: any) {
+    //   setIsLoadingLogin(false);
+    //   console.log('err :>> ', error);
+    // }
     try {
       const res = await authApi.login(payloadLogin);
       if (res.success === true) {
-        const auth = JSON.stringify(res.items);
-        dispatch(addAuth(res.items));
-        await AsyncStorage.setItem(
-          'auth',
-          remember ? auth : payloadLogin.email,
-        );
+        const auth = JSON.stringify(res.data);
+        await AsyncStorage.setItem('auth', auth);
+        dispatch(addAuth(res.data));
         setIsLoadingLogin(false);
       } else {
         setIsLoadingLogin(false);

@@ -10,19 +10,21 @@ import {
   TextComponent,
 } from '.';
 import {globalStyles} from '../assets/styles/globalStyle';
-import {colors, userList} from '../constants';
+import {colors} from '../constants';
+import {Member, UserType} from '../types';
 interface Props {
-  value: string[];
-  onSelect: (value: string[]) => void;
+  listPicker: UserType[];
+  value: Member[];
+  onSelect: (value: Member[]) => void;
   label?: string;
   required?: boolean;
 }
 const DropdownPickerComponent = (props: Props) => {
-  const {value, label, onSelect, required} = props;
+  const {value, label, onSelect, required, listPicker} = props;
   const modalizeRef = useRef<Modalize>();
   const [isVisibleModalize, setIsVisibleModalize] = useState(false);
   const [valueSearch, setValueSearch] = useState('');
-  const [selectedItems, setSelectedItems] = useState<string[]>([]);
+  const [selectedItems, setSelectedItems] = useState<Member[]>([]);
   useEffect(() => {
     if (isVisibleModalize) {
       modalizeRef.current?.open();
@@ -33,16 +35,17 @@ const DropdownPickerComponent = (props: Props) => {
       setSelectedItems(value);
     }
   }, [value, isVisibleModalize]);
-  const handleSelectedItems = (email: string) => {
-    if (selectedItems.includes(email)) {
+  const handleSelectedItems = (userId: string) => {
+    const userInclude = selectedItems.find(item => item.userId === userId);
+    if (userInclude) {
       const data = [...selectedItems];
-      const index = selectedItems.findIndex(e => e === email);
+      const index = selectedItems.findIndex(item => item.userId === userId);
       if (index !== -1) {
         data.splice(index, 1);
       }
       setSelectedItems(data);
     } else {
-      setSelectedItems([...selectedItems, email]);
+      setSelectedItems([...selectedItems, {userId}]);
     }
   };
   const handlePressOpenModalize = () => {
@@ -68,13 +71,13 @@ const DropdownPickerComponent = (props: Props) => {
         onPress={handlePressOpenModalize}>
         <RowComponent styles={styles.wapperUserInvited} gap={8} align="center">
           {value.length > 0 ? (
-            selectedItems.map(item => {
-              const use = userList.find(u => u.email === item);
+            value.map(item => {
+              const use = listPicker.find(user => user.userId === item.userId);
               return (
                 use && (
                   <TextComponent
-                    key={use.id}
-                    text={use.name}
+                    key={use.userId}
+                    text={use.fullName}
                     styles={styles.userInvited}
                   />
                 )
@@ -144,25 +147,26 @@ const DropdownPickerComponent = (props: Props) => {
             direction="column"
             gap={20}
             align="center">
-            {userList.map(item => (
-              <RowComponent
-                key={item.id}
-                align="center"
-                onPress={() => handleSelectedItems(item.email)}>
-                <TextComponent
-                  text={item.email}
-                  flex={1}
-                  color={
-                    selectedItems.includes(item.email)
-                      ? colors.primary
-                      : colors.text
-                  }
-                />
-                {selectedItems.includes(item.email) && (
-                  <TickCircle size={16} color={colors.primary} />
-                )}
-              </RowComponent>
-            ))}
+            {listPicker?.map(item => {
+              const userPicker = selectedItems.find(
+                user => item.userId === user.userId,
+              );
+              return (
+                <RowComponent
+                  key={item.userId}
+                  align="center"
+                  onPress={() => handleSelectedItems(item.userId)}>
+                  <TextComponent
+                    text={item.email}
+                    flex={1}
+                    color={userPicker ? colors.primary : colors.text}
+                  />
+                  {userPicker && (
+                    <TickCircle size={16} color={colors.primary} />
+                  )}
+                </RowComponent>
+              );
+            })}
           </RowComponent>
         </Modalize>
       </Portal>

@@ -12,15 +12,20 @@ import {
   PriorityComponent,
   RowComponent,
   SectionComponent,
+  DatePickerComponent,
+  ModalLoading,
 } from '../../components';
-import DatePickerComponent from '../../components/DateTimePickerComponent';
 import {colors} from '../../constants';
-import {useAppDispatch} from '../../hooks/useRedux';
+import {useAppDispatch, useAppSelector} from '../../hooks/useRedux';
 import {createTask} from '../../redux/silces/taskSlice';
+import {userApi} from '../../apis';
+import {UserType} from '../../types';
+import {useQuery} from '@tanstack/react-query';
 dayjs.extend(isSameOrAfter);
 const AddTaskScreen = ({navigation, route}: any) => {
   const {userIdList} = route.params;
   const dispatch = useAppDispatch();
+  const {dataAuth} = useAppSelector(state => state.auth);
   let taskId = uuid.v4().toString();
   const initialState = {
     taskId,
@@ -29,38 +34,12 @@ const AddTaskScreen = ({navigation, route}: any) => {
     startDate: new Date(),
     endDate: new Date(),
     priority: 'Không',
-    projectId: '',
-    performById: 0,
-    createById: '',
-    statusId: '',
+    performById: '',
+    statusId: 'Chưa hoàn thành',
   };
   const [task, setTask] = useState(initialState);
   const [isDisable, setIsDisable] = useState(false);
-  const [userList, setUserList] = useState([
-    {
-      id: 1,
-      name: 'Phong 1',
-      email: 'lehongphong1@gmail.com',
-    },
-    {
-      id: 2,
-      name: 'Phong 2',
-      email: 'lehongphong2@gmail.com',
-    },
-    {
-      id: 3,
-      name: 'Phong 3',
-      email: 'lehongphong3@gmail.com',
-    },
-  ]);
   const isDateCorrect = dayjs(task.endDate).isSameOrAfter(task.startDate);
-  // useEffect(() => {
-  //   if (userIdList) {
-  //     userIdList.map(async userId => {
-  //       const user = await get
-  //     });
-  //   }
-  // }, [userIdList]);
   useEffect(() => {
     if (!isDateCorrect) {
       setIsDisable(true);
@@ -71,18 +50,40 @@ const AddTaskScreen = ({navigation, route}: any) => {
       setIsDisable(false);
     }
   }, [isDateCorrect]);
+  const {data, isLoading} = useQuery({
+    queryKey: ['getUserListByWorkplaceId'],
+    queryFn: async () => {
+      if (dataAuth.workplaceId) {
+        const res = await userApi.getUserAllByWorkplaceById(
+          dataAuth.workplaceId,
+        );
+        const userList: UserType[] = [];
+        userIdList?.forEach((item: any) => {
+          res.forEach((user: UserType) => {
+            if (item.userId === user.userId) {
+              userList.push(user);
+            }
+          });
+        });
+        return userList;
+      }
+    },
+  });
   const handleChangeValues = (id: string, value: string | Date | number) => {
-    const data: any = {...task};
-    data[`${id}`] = value;
-    setTask(data);
+    const dataChangeValue: any = {...task};
+    dataChangeValue[`${id}`] = value;
+    setTask(dataChangeValue);
   };
   const handleAddTask = () => {
     const startDate = formatISO(task.startDate);
     const endDate = formatISO(task.endDate);
-    const data = {...task, startDate, endDate};
-    dispatch(createTask(data));
+    const dataAddTask = {...task, startDate, endDate};
+    dispatch(createTask(dataAddTask));
     navigation.goBack();
   };
+  if (!data) {
+    return <ModalLoading isVisable={isLoading} />;
+  }
   return (
     <ContainerComponent back title="Thêm công việc">
       <SectionComponent>
@@ -128,7 +129,7 @@ const AddTaskScreen = ({navigation, route}: any) => {
         <DropdownSingleComponent
           required
           label="Người đảm nhiệm"
-          userList={userList}
+          userList={data}
           value={task.performById}
           onSeclect={val => handleChangeValues('performById', val)}
         />

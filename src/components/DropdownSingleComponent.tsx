@@ -11,38 +11,47 @@ import {
 } from '.';
 import {globalStyles} from '../assets/styles/globalStyle';
 import {colors, fontFamily} from '../constants';
+import {UserType} from '../types';
 
-type User = {
-  id: number;
-  name: string;
-  email: string;
-};
 interface Props {
-  userList: User[];
-  value: string | number;
-  onSeclect: (value: string | number) => void;
+  userList: UserType[];
+  value: string;
+  onSeclect: (value: string) => void;
   label?: string;
   required?: boolean;
 }
 const DropdownSingleComponent = (props: Props) => {
   const {value, userList, label, required, onSeclect} = props;
   const modalizeRef = useRef<Modalize>();
-  const [userIdSelected, setUserIdSelected] = useState(0);
+  const [userIdSelected, setUserIdSelected] = useState('');
   const [isVisibleModalizer, setIsVisibleModalize] = useState(false);
   useEffect(() => {
     if (isVisibleModalizer) {
       modalizeRef.current?.open();
     }
   }, [isVisibleModalizer]);
+  useEffect(() => {
+    if (value) {
+      setUserIdSelected(value);
+    }
+  }, [value]);
   const handleSeclect = () => {
     setIsVisibleModalize(true);
   };
-  const handleSelectedUser = (id: number) => {
-    setUserIdSelected(id);
+  const handleSelectedUser = (userId: string) => {
+    setUserIdSelected(userId);
   };
   const handleConfirmSeclect = () => {
     onSeclect(userIdSelected);
     modalizeRef.current?.close();
+  };
+  const userPicker = (userId: string) => {
+    const user = userList.find(item => item.userId === userId);
+    return (
+      <>
+        <TextComponent text={user?.fullName} />
+      </>
+    );
   };
   return (
     <>
@@ -59,7 +68,7 @@ const DropdownSingleComponent = (props: Props) => {
           styles={[globalStyles.inputContainer]}
           onPress={handleSeclect}>
           {value ? (
-            <TextComponent text={String(value)} />
+            userPicker(value)
           ) : (
             <RowComponent align="center">
               <TextComponent
@@ -106,16 +115,18 @@ const DropdownSingleComponent = (props: Props) => {
                 <RowComponent
                   styles={styles.itemSelect}
                   align="center"
-                  key={user.id}
-                  onPress={() => handleSelectedUser(user.id)}>
+                  key={user.userId}
+                  onPress={() => handleSelectedUser(user.userId)}>
                   <TextComponent
                     flex={1}
-                    text={user.name}
+                    text={user.fullName}
                     color={
-                      userIdSelected === user.id ? colors.primary : colors.text
+                      userIdSelected === user.userId
+                        ? colors.primary
+                        : colors.text
                     }
                   />
-                  {userIdSelected === user.id && (
+                  {userIdSelected === user.userId && (
                     <TickCircle size={18} color={colors.primary} />
                   )}
                 </RowComponent>

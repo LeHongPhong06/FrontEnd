@@ -1,19 +1,7 @@
 import {PayloadFileType, TaskType} from '.';
+import {CommentType} from './comment';
 
-export interface AuthLogin {
-  email: string;
-  password: string;
-}
-
-export interface AuthRegister {
-  fullName: string;
-  phoneNumber: string;
-  email: string;
-  password: string;
-  gender: string;
-}
-
-export interface WorkCreateType {
+export interface ProjectType {
   projectId?: string;
   title: string;
   description: string;
@@ -24,4 +12,14 @@ export interface WorkCreateType {
   tasks: TaskType[];
   document: PayloadFileType[];
   member: string[];
+  status: {
+    statusId: string;
+    name: string;
+  };
+  comment: CommentType[];
+  memberProject: Member[];
+}
+
+export interface Member {
+  userId: string;
 }

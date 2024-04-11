@@ -10,31 +10,41 @@ import {
 } from '../../components';
 import {colors} from '../../constants';
 import {useAppSelector} from '../../hooks/useRedux';
+import {authApi} from '../../apis';
 
 const PasswordScreen = () => {
   const {dataAuth} = useAppSelector(state => state.auth);
   const initialValues = {
     password: '',
     newPassword: '',
-    confirmNewPassword: '',
+    confirmPassword: '',
   };
-  const [userPassword, setUserPassword] = useState(initialValues);
-  const {password, confirmNewPassword, newPassword} = userPassword;
+  const [user, setUser] = useState(initialValues);
+  const {password, confirmPassword, newPassword} = user;
   const [isDisable, setIsDisable] = useState(true);
   useEffect(() => {
-    if (password && confirmNewPassword && newPassword) {
+    if (password && confirmPassword && newPassword) {
       setIsDisable(false);
     } else {
       setIsDisable(true);
     }
-  }, [confirmNewPassword, newPassword, password]);
+  }, [confirmPassword, newPassword, password]);
   const handleChangeValues = (key: string, value: string) => {
-    const data: any = {...userPassword};
+    const data: any = {...user};
     data[`${key}`] = value;
-    setUserPassword(data);
+    setUser(data);
   };
-  const handleConfirmChangePassword = () => {
-    console.log('object :>> ', userPassword);
+  const handleConfirmChangePassword = async () => {
+    if (dataAuth.userId) {
+      try {
+        const res = await authApi.changePassword(dataAuth.userId, user);
+        if (res.success === true) {
+        } else {
+        }
+      } catch (error) {
+        console.log('error :>> ', error);
+      }
+    }
   };
   return (
     <ContainerComponent back title="Đổi mật khẩu">
@@ -64,8 +74,8 @@ const PasswordScreen = () => {
           allowClear
           affix={<PasswordCheck size={22} color={colors.gray5} />}
           isPassword
-          onChange={val => handleChangeValues('confirmNewPassword', val)}
-          value={confirmNewPassword}
+          onChange={val => handleChangeValues('confirmPassword', val)}
+          value={confirmPassword}
           placeholder="Xác nhận mật khẩu mới"
         />
         <ButtonTextComponent

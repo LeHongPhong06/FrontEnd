@@ -1,3 +1,10 @@
+interface UserPerform {
+  fullName: string;
+  email: string;
+  userId: string;
+  phoneNumber: string;
+}
+
 export interface TaskType {
   taskId: string;
   title: string;
@@ -7,6 +14,9 @@ export interface TaskType {
   priority: string;
   projectId?: string;
   performById: string | number;
-  createById: string;
-  statusId?: string;
+  status?: {
+    statusId: string;
+    name: string;
+  };
+  userPerformTask?: UserPerform;
 }

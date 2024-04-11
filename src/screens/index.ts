@@ -10,6 +10,7 @@ import ProfileScreen from './profile/ProfileScreen';
 import AddTaskScreen from './task/AddTaskScreen';
 import EditTaskScreen from './task/EditTaskScreen';
 import AddWorkScreen from './work/AddWorkScreen';
+import EditWorkScreen from './work/EditWorkScreen';
 import ScheduleScreen from './work/ScheduleScreen';
 import WorkDetailScreen from './work/WorkDetailScreen';
 import WorkListScreen from './work/WorkListScreen';
@@ -22,6 +23,7 @@ export {
   AddTaskScreen,
   AddWorkScreen,
   EditTaskScreen,
+  EditWorkScreen,
   ForgotPasswordScreen,
   HomeScreen,
   InfoTeacherScreen,

@@ -17,10 +17,11 @@ import {colors} from '../../constants';
 import {ProgressFileType} from '../../types';
 import {calcFileSize} from '../../utils/calcFileSize';
 
-const UpdateWorkplaceScreen = () => {
+const UpdateWorkplaceScreen = ({route}: any) => {
+  const {workplaceInfo} = route.params;
   const initialState = {
-    logo: '',
-    name: '',
+    logo: workplaceInfo.logo ?? '',
+    name: workplaceInfo.name ?? '',
   };
   const [workplace, setWorkplace] = useState(initialState);
   const [filePicker, setFilePicker] = useState<ImageOrVideo>();
@@ -39,6 +40,7 @@ const UpdateWorkplaceScreen = () => {
       const res = storage().ref(path).putFile(filePicker.path);
       res.on('state_changed', task => {
         setProgressUploadFile({
+          name: task.metadata.name,
           transfer: task.bytesTransferred,
           total: task.totalBytes,
         });
@@ -60,6 +62,9 @@ const UpdateWorkplaceScreen = () => {
   const handleUpdateWorkplace = () => {
     handleUploadFileToStorage();
   };
+  if (!workplaceInfo) {
+    return null;
+  }
   return (
     <ContainerComponent back title="Cập nhật bộ môn">
       <SectionComponent>
@@ -71,7 +76,9 @@ const UpdateWorkplaceScreen = () => {
           <Image
             style={styles.imageLogo}
             source={{
-              uri: 'https://images.unsplash.com/photo-1682685795557-976f03aca7b2?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDF8MHxlZGl0b3JpYWwtZmVlZHw2fHx8ZW58MHx8fHx8',
+              uri:
+                workplaceInfo.logo ??
+                'https://upload.wikimedia.org/wikipedia/commons/d/d1/Image_not_available.png',
             }}
           />
           <ButtonImagePickerComponent

@@ -23,7 +23,6 @@ const TabNavigator = () => {
   return (
     <Tabs.Navigator
       screenOptions={({route}) => ({
-        tabBarItemStyle: {},
         tabBarHideOnKeyboard: true,
         headerShown: false,
         tabBarStyle: styles.tabsBarStyles,
