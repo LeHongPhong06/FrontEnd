@@ -4,12 +4,13 @@ import {StyleSheet, View} from 'react-native';
 import {Modalize} from 'react-native-modalize';
 import {Portal} from 'react-native-portalize';
 import {
+  AvatarComponent,
   ButtonTextComponent,
   InputComponent,
   RowComponent,
   TextComponent,
 } from '.';
-import {globalStyles} from '../assets/styles/globalStyle';
+import {globalStyles} from '../assets';
 import {colors} from '../constants';
 import {Member, UserType} from '../types';
 interface Props {
@@ -142,11 +143,7 @@ const DropdownPickerComponent = (props: Props) => {
               />
             </View>
           }>
-          <RowComponent
-            styles={styles.wapperModal}
-            direction="column"
-            gap={20}
-            align="center">
+          <RowComponent gap={12} styles={styles.wapperModal} direction="column">
             {listPicker?.map(item => {
               const userPicker = selectedItems.find(
                 user => item.userId === user.userId,
@@ -155,14 +152,28 @@ const DropdownPickerComponent = (props: Props) => {
                 <RowComponent
                   key={item.userId}
                   align="center"
+                  gap={12}
+                  styles={[
+                    styles.wapperContainer,
+                    {
+                      borderColor: userPicker ? colors.primary : colors.gray5,
+                    },
+                  ]}
                   onPress={() => handleSelectedItems(item.userId)}>
-                  <TextComponent
-                    text={item.email}
-                    flex={1}
-                    color={userPicker ? colors.primary : colors.text}
-                  />
+                  <AvatarComponent url={item.avatar} size={45} />
+                  <RowComponent direction="column" flex={1}>
+                    <TextComponent
+                      text={item.fullName}
+                      color={userPicker ? colors.primary : colors.text}
+                    />
+                    <TextComponent
+                      text={item.email}
+                      flex={1}
+                      color={userPicker ? colors.primary : colors.text}
+                    />
+                  </RowComponent>
                   {userPicker && (
-                    <TickCircle size={16} color={colors.primary} />
+                    <TickCircle size={22} color={colors.primary} />
                   )}
                 </RowComponent>
               );
@@ -176,6 +187,12 @@ const DropdownPickerComponent = (props: Props) => {
 const styles = StyleSheet.create({
   wapperUserInvited: {
     flexWrap: 'wrap',
+  },
+  wapperContainer: {
+    borderWidth: 1,
+    borderRadius: 12,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
   },
   userInvited: {
     paddingVertical: 4,
@@ -192,7 +209,7 @@ const styles = StyleSheet.create({
     paddingTop: 30,
   },
   wapperModal: {
-    paddingHorizontal: 15,
+    paddingHorizontal: 10,
     paddingVertical: 12,
     paddingTop: 20,
   },
@@ -202,9 +219,8 @@ const styles = StyleSheet.create({
   },
   wapperInputHeader: {flex: 1},
   wapperFooter: {
-    paddingHorizontal: 16,
+    paddingHorizontal: 10,
     paddingVertical: 8,
-    borderTopWidth: 1.5,
     borderColor: colors.gray5,
   },
 });

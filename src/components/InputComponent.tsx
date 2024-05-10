@@ -8,9 +8,10 @@ import {
   View,
   ViewStyle,
 } from 'react-native';
-import {RowComponent, TextComponent} from '.';
-import {globalStyles} from '../assets/styles/globalStyle';
+import {globalStyles} from '../assets';
 import {colors} from '../constants';
+import RowComponent from './RowComponent';
+import TextComponent from './TextComponent';
 interface Props {
   value: string;
   onChange: (val: string) => void;

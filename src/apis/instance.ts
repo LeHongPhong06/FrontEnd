@@ -1,8 +1,12 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios, {AxiosInstance} from 'axios';
+import {Platform} from 'react-native';
 
 const instance: AxiosInstance = axios.create({
-  baseURL: 'http://10.0.2.2:3000/',
+  baseURL:
+    Platform.OS === 'android'
+      ? 'http://10.0.2.2:8888/'
+      : 'http://localhost:8888',
   headers: {
     Accept: 'application/json',
     'Content-Type': 'application/json',

@@ -1,9 +1,7 @@
-/* eslint-disable react-hooks/exhaustive-deps */
-/* eslint-disable react/no-unstable-nested-components */
-import React, {useEffect, useState} from 'react';
-import {AuthNavigator, MainNavigator} from '../navigators';
 import {useAsyncStorage} from '@react-native-async-storage/async-storage';
-import {useAppDispatch, useAppSelector} from '../hooks/useRedux';
+import React, {useEffect, useState} from 'react';
+import {useAppDispatch, useAppSelector} from '../hooks';
+import {AuthNavigator, MainNavigator} from '../navigators';
 import {addAuth} from '../redux/silces/authSlice';
 import {SplashScreen} from '../screens';
 
@@ -21,17 +19,16 @@ const RootRouter = () => {
       auth && dispatch(addAuth(data));
     }
   };
-  const {dataAuth} = useAppSelector(state => state.auth);
   useEffect(() => {
     const timeSplash = setTimeout(() => {
       setHideSlapsh(false);
     }, 1500);
     return () => clearTimeout(timeSplash);
   }, []);
-  const Router = () => {
-    return dataAuth?.access_token ? <MainNavigator /> : <AuthNavigator />;
-  };
   return hideSlapsh ? <SplashScreen /> : <Router />;
 };
-
+const Router = () => {
+  const {dataAuth} = useAppSelector(state => state.auth);
+  return dataAuth?.access_token ? <MainNavigator /> : <AuthNavigator />;
+};
 export default RootRouter;

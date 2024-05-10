@@ -4,7 +4,7 @@ import {StyleSheet, View} from 'react-native';
 import {Modalize} from 'react-native-modalize';
 import {Portal} from 'react-native-portalize';
 import {ButtonTextComponent, RowComponent, TextComponent} from '.';
-import {globalStyles} from '../assets/styles/globalStyle';
+import {globalStyles} from '../assets';
 import {colors, fontFamily, priorityList} from '../constants';
 import {PriorityType} from '../types/priority';
 

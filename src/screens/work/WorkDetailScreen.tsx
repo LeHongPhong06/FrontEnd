@@ -1,27 +1,9 @@
-import {useMutation, useQuery, useQueryClient} from '@tanstack/react-query';
-import {format} from 'date-fns';
-import dayjs from 'dayjs';
-import isSameOrAfter from 'dayjs/plugin/isSameOrAfter';
-import {ArrowLeft2, Calendar, Call} from 'iconsax-react-native';
-import React, {useEffect, useState} from 'react';
+import {projectApi} from '../../apis';
+import {globalStyles} from '../../assets';
 import {
-  Alert,
-  Dimensions,
-  Linking,
-  RefreshControl,
-  ScrollView,
-  StatusBar,
-  StyleSheet,
-  ToastAndroid,
-  TouchableOpacity,
-  View,
-} from 'react-native';
-import {projectApi, taskApi} from '../../apis';
-import {globalStyles} from '../../assets/styles/globalStyle';
-import {
-  AvatarComponent,
   ButtonTextComponent,
-  InputComponent,
+  CircleComponent,
+  ContainerComponent,
   ModalLoading,
   RowComponent,
   SectionComponent,
@@ -29,15 +11,32 @@ import {
   TextComponent,
 } from '../../components';
 import {colors, fontFamily, screens} from '../../constants';
-import {useAppSelector} from '../../hooks/useRedux';
-dayjs.extend(isSameOrAfter);
+import {useAppSelector} from '../../hooks';
+import {ProjectType} from '../../types';
+import {
+  ShowToast,
+  formatDateString,
+  getColor,
+  isDateSameOrAfter,
+  isDateSameOrBefore,
+  socket,
+} from '../../utils';
+import {useNavigation} from '@react-navigation/native';
+import {useMutation, useQuery, useQueryClient} from '@tanstack/react-query';
+import {Add, ArrowLeft2, Calendar} from 'iconsax-react-native';
+import React from 'react';
+import {
+  Alert,
+  Dimensions,
+  StatusBar,
+  StyleSheet,
+  TouchableOpacity,
+} from 'react-native';
 const WorkDetailScreen = ({navigation, route}: any) => {
   const {projectId} = route.params;
   const queryClient = useQueryClient();
   const {dataAuth} = useAppSelector(state => state.auth);
-  const [isDisabled, setIsDisabled] = useState(true);
-  const [conentComment, setContentComment] = useState('');
-  const {data, isLoading, refetch} = useQuery({
+  const {data, isLoading} = useQuery({
     queryKey: ['getDetailProject', projectId],
     queryFn: () => {
       if (projectId) {
@@ -45,145 +44,77 @@ const WorkDetailScreen = ({navigation, route}: any) => {
       }
     },
   });
-  const deleleTask = useMutation({
-    mutationKey: ['deleterTask'],
-    mutationFn: (taskId: string) => taskApi.deleteTask(taskId),
+  const completedProject = useMutation({
+    mutationKey: ['completedProject'],
+    mutationFn: () => projectApi.completedProject(projectId),
     onSuccess: res => {
       if (res.success === true) {
         queryClient.invalidateQueries({
           queryKey: ['getDetailProject', projectId],
           exact: true,
         });
-        ToastAndroid.show('Xóa việc làm thành công', 2);
+        ShowToast('Công việc được hoàn thành');
       }
     },
   });
-  const deleteProject = useMutation({
-    mutationKey: ['deleteProject'],
-    mutationFn: () => projectApi.deleteProject(projectId),
-    onSuccess: res => {
-      if (res.success === true) {
-        queryClient.invalidateQueries({
-          queryKey: ['getProjectList'],
-        });
-        ToastAndroid.show('Xóa công việc thành công', 2);
-        navigation.goBack();
-      }
-    },
-  });
-  const isDateCorrect = dayjs(Date.now()).isSameOrAfter(data?.startDate);
-  useEffect(() => {
-    if (isDateCorrect) {
-      setIsDisabled(false);
-    } else {
-      setIsDisabled(true);
-    }
-  }, [isDateCorrect]);
-  const onPressBack = () => {
-    navigation.goBack();
-  };
-  const handleEditWork = () => {
-    navigation.navigate(screens.EDITWORK_SCREEN, {dataWork: data});
-  };
-  const handlePressUpdateTask = () => {};
-  const handleSendCmt = () => {};
-  const handlePressComplete = () => {};
-  const handleDeleteTask = (title: string, taskId: string) => {
-    Alert.alert('Xác nhận', `Bạn có chắc chắn muốn xóa việc làm ${title} ?`, [
-      {
-        text: 'Từ chối',
-        style: 'cancel',
-      },
-      {
-        text: 'Đồng ý',
-        style: 'default',
-        onPress: () => deleleTask.mutate(taskId),
-      },
-    ]);
-  };
-  const handleDeleteWork = (title: string) => {
-    Alert.alert('Xác nhận', `Bạn có chắc chắn muốn xóa công việc ${title} ?`, [
-      {
-        text: 'Từ chối',
-        style: 'cancel',
-      },
-      {
-        text: 'Đồng ý',
-        style: 'default',
-        onPress: () => deleteProject.mutate(),
-      },
-    ]);
-  };
-  const handlePressLinking = (
-    type: 'email' | 'phone',
-    payload: string | undefined,
-  ) => {
-    if (type === 'email') {
-      Linking.openURL(`mailto:${payload}`);
-    } else if (type === 'phone') {
-      Linking.openURL(`tel:${payload}`);
-    }
-  };
   if (!projectId) {
     return null;
   }
   if (!data) {
     return <ModalLoading isVisable={isLoading} />;
   }
+  const isDateCorrect = isDateSameOrAfter(Date.now(), data.startDate);
+  const completedStatus = ['completedlate', 'finished'];
+  const taskCompleted = data.tasks.filter(item =>
+    completedStatus.includes(item.status.statusId),
+  );
+  const isCompletedProject = taskCompleted.length === data.tasks?.length;
+  const isMeCreated = data.createById === dataAuth.userId;
+  const isAdd = isDateSameOrBefore(Date.now(), data.endDate);
+  const isCompleted = completedStatus.includes(data.statusId);
+  const handleCompleteProject = () => {
+    Alert.alert(
+      'Xác nhận',
+      'Bạn có chắc mình đã hoàn thành công việc của mình?. Sau khi xác nhận sẽ không thể cập nhật',
+      [
+        {
+          text: 'Đóng',
+          style: 'cancel',
+        },
+        {
+          text: 'Đồng ý',
+          style: 'destructive',
+          onPress: () => completedProject.mutate(),
+        },
+      ],
+    );
+  };
+  const handlePressTaskDetail = (taskId: string) => {
+    navigation.navigate(screens.TASKWORKDETAIL_SCREEN, {
+      taskId,
+    });
+  };
+  const handleAddTask = () => {
+    navigation.navigate(screens.ADDTASKWORKDETAIL_SCREEN, {
+      userIdList: data.memberProject,
+      projectId,
+    });
+  };
+  const handleComment = () => {
+    socket.emit('joinProject', data.projectId);
+    navigation.navigate(screens.DISCUSS_SCREEN, {data});
+  };
+  const handlePressRequestListScreen = () => {
+    navigation.navigate(screens.REQUESTCOMPLETE_SCREEN, {
+      projectId: data.projectId,
+    });
+  };
   return (
-    <ScrollView
-      showsVerticalScrollIndicator={false}
-      refreshControl={
-        <RefreshControl
-          colors={[colors.primary]}
-          refreshing={isLoading}
-          onRefresh={refetch}
-        />
-      }>
-      <View style={styles.container}>
-        <SectionComponent styles={styles.header}>
-          <RowComponent styles={styles.wapperTitle} gap={10} align="center">
-            <TouchableOpacity onPress={onPressBack} style={styles.btnBack}>
-              <ArrowLeft2 size={20} color={colors.white} />
-            </TouchableOpacity>
-            <TextComponent
-              numberOfLines={1}
-              text={data?.title ?? 'Tiêu đề công việc'}
-              color={colors.white}
-              size={17}
-              styles={styles.title}
-              font={fontFamily.semibold}
-            />
-          </RowComponent>
-          <SpaceComponent height={20} />
-          <RowComponent align="center" justify="space-between">
-            <RowComponent direction="column" gap={4}>
-              <TextComponent text={'Thời gian'} color={colors.white} />
-              <RowComponent align="center" gap={6}>
-                <Calendar size={20} color={colors.white} />
-                <TextComponent
-                  color={colors.white}
-                  text={`${format(data.startDate, 'dd/MM/yyyy')} -  ${format(
-                    data.endDate,
-                    'dd/MM/yyyy',
-                  )}`}
-                />
-              </RowComponent>
-            </RowComponent>
-            <RowComponent direction="column" align="flex-end" gap={4}>
-              <TextComponent
-                text={'Chỉnh sửa'}
-                color={colors.white}
-                onPress={handleEditWork}
-              />
-              <TextComponent
-                text={'Xóa'}
-                color={colors.white}
-                onPress={() => handleDeleteWork(data.title)}
-              />
-            </RowComponent>
-          </RowComponent>
-        </SectionComponent>
+    <>
+      <ContainerComponent
+        back
+        header={<Header data={data} projectId={projectId} />}
+        isScroll>
         <SectionComponent>
           <TextComponent
             text={'Mô tả công việc'}
@@ -213,87 +144,73 @@ const WorkDetailScreen = ({navigation, route}: any) => {
             )}
           </RowComponent>
           <SpaceComponent height={24} />
-          <TextComponent
-            text={'Những việc cần làm'}
-            size={16}
-            font={fontFamily.semibold}
-          />
+          <RowComponent align="center" justify="space-between">
+            <TextComponent
+              size={16}
+              font={fontFamily.semibold}
+              text={'Những việc cần làm'}
+            />
+            {isMeCreated && isAdd && (
+              <ButtonTextComponent
+                onPress={handleAddTask}
+                textColor={colors.white}
+                styles={styles.btnAddTask}
+                affix={<Add size={18} color={colors.white} />}
+              />
+            )}
+          </RowComponent>
           <RowComponent
             gap={24}
             direction="column"
             styles={styles.wapperTaskList}>
             {data.tasks.length > 0 ? (
               data.tasks.map(task => {
-                const isUpdateTask =
-                  task.userPerformTask?.userId === dataAuth.userId;
                 return (
                   <RowComponent
-                    gap={7}
-                    direction="column"
                     key={task.taskId}
+                    align="center"
+                    justify="space-between"
+                    onPress={() => handlePressTaskDetail(task.taskId)}
                     styles={[styles.wapperTask, globalStyles.shadow]}>
-                    <TextComponent
-                      text={task.title}
-                      numberOfLines={1}
-                      font={fontFamily.semibold}
-                    />
-                    <TextComponent
-                      numberOfLines={2}
-                      text={`Mô tả: ${task.description ?? 'Trống'}`}
-                    />
-                    <TextComponent
-                      text={`Người đảm nhiệm: ${task.userPerformTask?.fullName}`}
-                    />
-                    <RowComponent align="center" gap={4}>
+                    <RowComponent direction="column" gap={7} flex={1}>
                       <TextComponent
-                        text={`Liên hệ: ${
-                          task.userPerformTask?.phoneNumber ?? 'Chưa cập nhật'
-                        }`}
+                        text={task.title}
+                        numberOfLines={1}
+                        font={fontFamily.semibold}
                       />
-                      {task.userPerformTask?.phoneNumber && (
-                        <Call
-                          size={22}
-                          color={colors.green}
-                          onPress={() =>
-                            handlePressLinking(
-                              'phone',
-                              task.userPerformTask?.phoneNumber,
-                            )
-                          }
+                      <TextComponent
+                        text={`Mô tả: ${task.description ?? 'Trống'}`}
+                      />
+                      <TextComponent
+                        text={`Người đảm nhiệm: ${task.userPerformTask?.fullName}`}
+                      />
+                      <RowComponent align="center" gap={4}>
+                        <TextComponent
+                          text={`Liên hệ: ${
+                            task.userPerformTask?.phoneNumber ?? 'Chưa cập nhật'
+                          }`}
                         />
-                      )}
-                    </RowComponent>
-                    <RowComponent align="center" gap={4}>
+                      </RowComponent>
+                      <RowComponent align="center" gap={4}>
+                        <TextComponent
+                          text={`Email: ${
+                            task.userPerformTask?.email ?? 'Chưa cập nhật'
+                          }`}
+                        />
+                      </RowComponent>
                       <TextComponent
-                        text={`Email: ${
-                          task.userPerformTask?.email ?? 'Chưa cập nhật'
-                        }`}
+                        text={`Thời gian: ${formatDateString(
+                          task.startDate,
+                        )} - ${formatDateString(task.endDate)}`}
                       />
-                      <Call />
-                    </RowComponent>
-                    <TextComponent
-                      text={`Thời gian: ${format(
-                        task.startDate,
-                        'dd/MM/yyyy',
-                      )} - ${format(task.endDate, 'dd/MM/yyyy')}`}
-                    />
-                    <TextComponent text={`Trạng thái: ${task.status?.name}`} />
-                    <SpaceComponent height={2} />
-                    <RowComponent align="center" gap={16}>
-                      <ButtonTextComponent
-                        disable={isUpdateTask ? false : true}
-                        textColor={colors.white}
-                        styles={styles.btnUpdate}
-                        title="Cập nhật"
-                        onPress={() => handlePressUpdateTask()}
-                      />
-                      <TextComponent
-                        text={'Xóa'}
-                        color={colors.danger}
-                        onPress={() =>
-                          handleDeleteTask(task.title, task.taskId)
-                        }
-                      />
+                      <RowComponent gap={8} align="center">
+                        <CircleComponent
+                          height={8}
+                          width={8}
+                          bgColor={getColor(task.statusId)}
+                        />
+                        <TextComponent text={task.status?.name} />
+                      </RowComponent>
                     </RowComponent>
                   </RowComponent>
                 );
@@ -302,55 +219,131 @@ const WorkDetailScreen = ({navigation, route}: any) => {
               <TextComponent text={'Trống'} color={colors.gray} />
             )}
           </RowComponent>
-          <SpaceComponent height={24} />
-          <TextComponent
-            text={'Thảo luận'}
-            size={16}
-            font={fontFamily.semibold}
-          />
-          {data.comment.length > 0 ? (
-            data.comment.map(cmt => {
-              return (
-                <View key={cmt.commentId}>
-                  <TextComponent text={cmt.content} />
-                </View>
-              );
-            })
-          ) : (
-            <TextComponent
-              text={'Không có ai bình luận về công việc'}
-              color={colors.gray}
+          <RowComponent gap={12}>
+            {isMeCreated && (
+              <ButtonTextComponent
+                title="Yêu cầu hoàn thành"
+                textColor={colors.white}
+                onPress={handlePressRequestListScreen}
+                styles={styles.btnListComplete}
+              />
+            )}
+            <ButtonTextComponent
+              title="Thảo luận"
+              textColor={colors.primary}
+              onPress={handleComment}
+              bgColor={colors.white}
+              styles={styles.btn}
             />
-          )}
-          <SpaceComponent height={8} />
-          <InputComponent
-            allowClear
-            placeholder="Suy nghĩ của bạn..."
-            numberOfLines={1}
-            affix={<AvatarComponent url={dataAuth.avatar} size={35} />}
-            suffix={
-              conentComment.length > 0 && (
-                <ButtonTextComponent
-                  title="Gửi"
-                  onPress={handleSendCmt}
-                  styles={styles.btnSendCmt}
-                  textColor={colors.white}
-                />
-              )
-            }
-            value={conentComment}
-            onChange={val => setContentComment(val)}
-          />
-          <ButtonTextComponent
-            disable={isDisabled}
-            title="Hoàn thành"
-            textColor={colors.white}
-            onPress={handlePressComplete}
-            styles={styles.btn}
-          />
+          </RowComponent>
+          <SpaceComponent height={50} />
         </SectionComponent>
-      </View>
-    </ScrollView>
+      </ContainerComponent>
+      {isMeCreated && (
+        <ButtonTextComponent
+          disable={!isDateCorrect || isCompleted || !isCompletedProject}
+          title={isCompleted ? 'Đã hoàn thành' : 'Hoàn thành'}
+          textColor={colors.white}
+          onPress={handleCompleteProject}
+          styles={[styles.btn, styles.btnComplete]}
+        />
+      )}
+    </>
+  );
+};
+const Header = ({data, projectId}: {data: ProjectType; projectId: string}) => {
+  const {dataAuth} = useAppSelector(state => state.auth);
+  const queryClient = useQueryClient();
+  const navigation: any = useNavigation();
+  const completedStatus = ['completedlate', 'finished'];
+  const taskCompleted = data.tasks?.filter(item =>
+    completedStatus.includes(item.statusId),
+  );
+  const isMeCreated = data.createById === dataAuth.userId;
+  const isCompleted = completedStatus.includes(data.status.statusId);
+  const deleteProject = useMutation({
+    mutationKey: ['deleteProject'],
+    mutationFn: () => projectApi.deleteProject(projectId),
+    onSuccess: res => {
+      if (res.success === true) {
+        queryClient.invalidateQueries({
+          queryKey: ['getProjectList'],
+        });
+        ShowToast('Xóa công việc thành công');
+        navigation.goBack();
+      }
+    },
+  });
+  const onPressBack = () => {
+    navigation.goBack();
+  };
+  const handleDeleteWork = (title: string) => {
+    Alert.alert('Xác nhận', `Bạn có chắc chắn muốn xóa công việc ${title} ?`, [
+      {
+        text: 'Từ chối',
+        style: 'cancel',
+      },
+      {
+        text: 'Đồng ý',
+        style: 'destructive',
+        onPress: () => deleteProject.mutate(),
+      },
+    ]);
+  };
+  const handleEditWork = () => {
+    navigation.navigate(screens.EDITWORK_SCREEN, {dataWork: data});
+  };
+  return (
+    <SectionComponent styles={styles.header}>
+      <RowComponent styles={styles.wapperTitle} gap={10} align="center">
+        <TouchableOpacity onPress={onPressBack} style={styles.btnBack}>
+          <ArrowLeft2 size={20} color={colors.white} />
+        </TouchableOpacity>
+        <TextComponent
+          size={17}
+          numberOfLines={1}
+          color={colors.white}
+          styles={styles.title}
+          font={fontFamily.semibold}
+          text={data?.title ?? 'Tiêu đề công việc'}
+        />
+      </RowComponent>
+      <SpaceComponent height={20} />
+      <RowComponent align="flex-end" justify="space-between">
+        <RowComponent direction="column" gap={6}>
+          <TextComponent text={'Thời gian'} color={colors.white} />
+          <RowComponent align="center" gap={6}>
+            <Calendar size={20} color={colors.white} />
+            <TextComponent
+              color={colors.white}
+              text={`${formatDateString(data.startDate)} - ${formatDateString(
+                data.endDate,
+              )}`}
+            />
+          </RowComponent>
+          <TextComponent
+            color={colors.white}
+            text={`Đã hoàn thành ${taskCompleted.length}/${data.tasks.length}`}
+          />
+        </RowComponent>
+        {isMeCreated && (
+          <RowComponent direction="column" align="flex-end" gap={4}>
+            {!isCompleted && (
+              <TextComponent
+                text={'Chỉnh sửa'}
+                color={colors.white}
+                onPress={handleEditWork}
+              />
+            )}
+            <TextComponent
+              text={'Xóa'}
+              color={colors.white}
+              onPress={() => handleDeleteWork(data.title)}
+            />
+          </RowComponent>
+        )}
+      </RowComponent>
+    </SectionComponent>
   );
 };
 
@@ -358,12 +351,12 @@ const styles = StyleSheet.create({
   header: {
     paddingTop: StatusBar.currentHeight,
     paddingBottom: 18,
+    marginBottom: 0,
     borderBottomRightRadius: 14,
     borderBottomLeftRadius: 14,
     backgroundColor: colors.primary,
   },
   container: {
-    minHeight: Dimensions.get('window').height,
     backgroundColor: colors.white,
   },
   btnBack: {
@@ -373,7 +366,7 @@ const styles = StyleSheet.create({
     paddingTop: 8,
   },
   title: {
-    paddingRight: 30,
+    maxWidth: Dimensions.get('window').width * 0.7,
   },
   wapperTaskList: {
     marginVertical: 12,
@@ -385,17 +378,40 @@ const styles = StyleSheet.create({
   },
   btn: {
     borderRadius: 8,
+    flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  btnListComplete: {
+    flex: 2,
+    borderRadius: 8,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+
+  btnAddTask: {
+    padding: 8,
+    borderRadius: 8,
   },
   btnUpdate: {
     padding: 4,
     borderRadius: 6,
   },
-  btnSendCmt: {
+
+  btnCmt: {
     borderRadius: 8,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  wapperCmtItem: {
     padding: 6,
-    marginLeft: 6,
+    borderRadius: 12,
+  },
+  btnComplete: {
+    position: 'absolute',
+    bottom: 8,
+    right: 16,
+    left: 16,
   },
 });
 export default WorkDetailScreen;

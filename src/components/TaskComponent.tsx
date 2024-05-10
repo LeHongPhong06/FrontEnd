@@ -1,14 +1,14 @@
 import {useNavigation} from '@react-navigation/native';
-import {format} from 'date-fns';
-import {Add, CloseSquare, Edit} from 'iconsax-react-native';
+import {Add} from 'iconsax-react-native';
 import React from 'react';
 import {StyleSheet, TouchableOpacity, View} from 'react-native';
 import {ButtonTextComponent, RowComponent, TextComponent} from '.';
-import {globalStyles} from '../assets/styles/globalStyle';
+import {globalStyles} from '../assets';
 import {colors, screens} from '../constants';
-import {useAppDispatch} from '../hooks/useRedux';
+import {useAppDispatch} from '../hooks';
 import {deteleTask} from '../redux/silces/taskSlice';
 import {TaskType} from '../types';
+import {formatDateString} from '../utils';
 
 interface Props {
   value: TaskType[];
@@ -56,36 +56,38 @@ const TaskComponent = (props: Props) => {
         )}
       </RowComponent>
       {value.length > 0 ? (
-        <RowComponent styles={styles.wapperItem} gap={8}>
+        <RowComponent styles={styles.wapperItem} gap={8} direction="column">
           {value.map((item: TaskType) => (
             <RowComponent
               key={item.taskId}
               styles={styles.item}
-              flex={1}
+              gap={4}
               direction="column">
               <RowComponent direction="column">
                 <TextComponent text={item.title} numberOfLines={1} />
                 <TextComponent text={item.description} numberOfLines={1} />
                 <TextComponent
-                  text={`${format(item.startDate, 'dd/MM/yyyy')} - ${format(
-                    item.endDate,
-                    'dd/MM/yyyy',
-                  )}`}
+                  text={`${formatDateString(
+                    item.startDate,
+                  )} - ${formatDateString(item.endDate)}`}
                   numberOfLines={1}
                 />
               </RowComponent>
               <RowComponent gap={4}>
                 <ButtonTextComponent
-                  affix={<Edit color={colors.primary} size={12} />}
+                  title="Chỉnh sửa"
                   onPress={() => handleEditTask(item)}
                   styles={styles.btnEdit}
                   textColor={colors.primary}
                   bgColor={colors.white}
                 />
-                <CloseSquare
-                  size={24}
-                  color={colors.danger}
+                <ButtonTextComponent
+                  title="Xóa"
                   onPress={() => handleDeleteTask(item.taskId)}
+                  styles={styles.btnEdit}
+                  textColor={colors.danger}
+                  borderColor={colors.danger}
+                  bgColor={colors.white}
                 />
               </RowComponent>
             </RowComponent>
@@ -133,7 +135,7 @@ const styles = StyleSheet.create({
   },
   btnEdit: {
     borderRadius: 6,
-    padding: 4,
+    padding: 2,
   },
 });
 export default TaskComponent;

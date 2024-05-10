@@ -7,5 +7,8 @@ export const navigator = {
   WORKPLACE_NAVIGATOR: 'workplace_navigator',
   MAIN_NAVIGATOR: 'main_navigator',
   TABS_NAVIGATOR: 'tabs_navigator',
-  ADDWORK_NAVIGATOR: 'ADDWORK_navigator',
+  TABSADMIN_NAVIGATOR: 'tabsadmin_navigator',
+  ADDWORK_NAVIGATOR: 'addwork_navigator',
+  MANAGERUSER_NAVIGATOR: 'manageruser_navigator',
+  MANAGERWORKPLACE_NAVIGATOR: 'managerworkplace_navigator',
 };

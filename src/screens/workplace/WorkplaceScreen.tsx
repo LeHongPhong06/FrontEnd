@@ -1,54 +1,94 @@
-/* eslint-disable react-native/no-inline-styles */
-import React, {useState} from 'react';
-import {StyleSheet, TouchableOpacity} from 'react-native';
 import {
+  ButtonTextComponent,
   ContainerComponent,
   RowComponent,
   SectionComponent,
+  SpaceComponent,
   TextComponent,
 } from '../../components';
-import {categoryWorkpalce, colors, fontFamily} from '../../constants';
-import TeacherList from './TeacherList';
+import {categoryWorkpalce, colors, screens} from '../../constants';
+import {useAppSelector} from '../../hooks';
+import {globalStyles} from 'assets';
+import {Add} from 'iconsax-react-native';
+import React, {useState} from 'react';
+import {StyleSheet} from 'react-native';
 import InfoWorkplace from './InfoWorkplace';
+import TeacherList from './TeacherList';
 
-const WorkplaceScreen = () => {
+const WorkplaceScreen = ({navigation}: any) => {
+  const {dataAuth} = useAppSelector(state => state.auth);
+  const isLeader = dataAuth.roleId === 'Leader';
   const [category, setCategory] = useState(1);
-  const handleChangeCategory = (id: number) => {
-    setCategory(id);
+  const handleAddTeacher = () => {
+    navigation.navigate(screens.ADDTEACHER_SCREEN);
   };
   return (
-    <ContainerComponent back title="Bộ môn">
-      <SectionComponent>
-        <RowComponent align="center" justify="center" gap={30}>
-          {categoryWorkpalce.map(item => (
-            <TouchableOpacity
-              key={item.id}
-              onPress={() => handleChangeCategory(item.id)}
-              style={[
-                styles.category,
-                {
-                  borderColor: category === item.id ? colors.primary : '',
-                },
-              ]}>
-              <TextComponent
-                text={item.title}
-                color={category === item.id ? colors.primary : colors.text}
-                size={15}
-                font={fontFamily.semibold}
-              />
-            </TouchableOpacity>
-          ))}
-        </RowComponent>
-        {category === 1 && <TeacherList />}
-        {category === 2 && <InfoWorkplace />}
-      </SectionComponent>
-    </ContainerComponent>
+    <>
+      <ContainerComponent back title="Bộ môn">
+        <SectionComponent>
+          <RowComponent
+            align="center"
+            justify="space-between"
+            gap={6}
+            styles={[styles.wapperSelect, globalStyles.shadow]}>
+            {categoryWorkpalce.map(item => {
+              const selected = item.id === category;
+              return (
+                <TextComponent
+                  flex={1}
+                  key={item.title}
+                  text={item.title}
+                  textAlign="center"
+                  onPress={() => setCategory(item.id)}
+                  styles={[
+                    styles.itemSelect,
+                    {
+                      color: selected ? colors.white : colors.text,
+                      backgroundColor: selected ? colors.primary : colors.gray6,
+                    },
+                  ]}
+                />
+              );
+            })}
+          </RowComponent>
+          <SpaceComponent height={12} />
+          {category === 1 && <TeacherList />}
+          {category === 2 && <InfoWorkplace />}
+        </SectionComponent>
+      </ContainerComponent>
+      {isLeader && category === 1 && (
+        <ButtonTextComponent
+          onPress={handleAddTeacher}
+          title="Mời giảng viên"
+          styles={styles.btnAdd}
+          textColor={colors.white}
+          affix={<Add size={18} color={colors.white} />}
+        />
+      )}
+    </>
   );
 };
 
 const styles = StyleSheet.create({
   category: {
     paddingBottom: 8,
+  },
+  btnAdd: {
+    justifyContent: 'center',
+    position: 'absolute',
+    bottom: 12,
+    right: 16,
+    left: 16,
+  },
+  wapperSelect: {
+    padding: 8,
+    borderRadius: 8,
+    backgroundColor: colors.gray6,
+  },
+  itemSelect: {
+    borderRadius: 6,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
   },
 });
 export default WorkplaceScreen;

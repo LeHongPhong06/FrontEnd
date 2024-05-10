@@ -1,25 +1,52 @@
-import React, {useState} from 'react';
-import {Image, StyleSheet, ToastAndroid} from 'react-native';
+import {workplaceApi} from '../../apis';
 import {
   ButtonTextComponent,
   CardComponent,
   ContainerComponent,
   InputComponent,
+  ModalLoading,
   RowComponent,
   SectionComponent,
   TextComponent,
 } from '../../components';
 import {colors} from '../../constants';
+import {useAppSelector} from '../../hooks';
+import {ShowToast} from '../../utils';
 import Clipboard from '@react-native-clipboard/clipboard';
+import {useMutation, useQuery} from '@tanstack/react-query';
 import {Sms} from 'iconsax-react-native';
+import React, {useState} from 'react';
+import {Image, StyleSheet} from 'react-native';
 
 const TeacherAddScreen = () => {
+  const {dataAuth} = useAppSelector(state => state.auth);
   const [email, setEmail] = useState('');
-  const handleCopyWorkplaceId = (workplaceId: string) => {
-    Clipboard.setString(workplaceId);
-    ToastAndroid.show('Sao chép mã bộ môn thành công', ToastAndroid.TOP);
+  const {data, isLoading} = useQuery({
+    queryKey: ['getInfowWorkplace', dataAuth.workplaceId],
+    queryFn: () => {
+      if (dataAuth.workplaceId) {
+        return workplaceApi.getWorkplaceById(dataAuth.workplaceId);
+      }
+    },
+  });
+  const handleSendEmail = useMutation({
+    mutationKey: ['addMemberByEmail'],
+    mutationFn: async () => {
+      if (dataAuth.workplaceId) {
+        return await workplaceApi.addMemberByEmail({
+          email,
+          workplaceId: dataAuth.workplaceId,
+        });
+      }
+    },
+  });
+  if (!data) {
+    return <ModalLoading isVisable={isLoading} />;
+  }
+  const handleCopyWorkplaceId = () => {
+    Clipboard.setString(data.workplaceId);
+    ShowToast('Sao chép mã bộ môn thành công');
   };
-  const handleSendEmail = () => {};
   return (
     <ContainerComponent back title="Mời giảng viên" isScroll>
       <SectionComponent>
@@ -52,20 +79,18 @@ const TeacherAddScreen = () => {
                 bgColor={colors.white}
                 title="Gửi"
                 disable={email ? false : true}
-                onPress={handleSendEmail}
+                onPress={() => handleSendEmail.mutate()}
                 textColor={colors.primary}
               />
             </RowComponent>
           </CardComponent>
           <CardComponent title="Chia sẻ mã bộ môn">
             <RowComponent direction="column" align="center" gap={20}>
-              <TextComponent text="13888C58-28FD-4222-B442-E7AF9691FA58" />
+              <TextComponent text={data.workplaceId} />
               <ButtonTextComponent
                 bgColor={colors.white}
                 title="Sao chép mã bộ môn"
-                onPress={() =>
-                  handleCopyWorkplaceId('13888C58-28FD-4222-B442-E7AF9691FA58')
-                }
+                onPress={handleCopyWorkplaceId}
                 textColor={colors.primary}
               />
             </RowComponent>

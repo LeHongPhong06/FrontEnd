@@ -1,10 +1,10 @@
+import auth from '@react-native-firebase/auth';
+import {GoogleSignin} from '@react-native-google-signin/google-signin';
 import React from 'react';
 import {Image, StyleSheet, View} from 'react-native';
 import {LoginManager, Profile} from 'react-native-fbsdk-next';
 import {ButtonComponent, SpaceComponent} from '.';
 import {colors} from '../constants';
-import {GoogleSignin} from '@react-native-google-signin/google-signin';
-import auth from '@react-native-firebase/auth';
 const SocialLogin = () => {
   GoogleSignin.configure({
     webClientId:

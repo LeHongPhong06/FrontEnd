@@ -2,8 +2,13 @@ import {ProjectType} from '../types';
 import instance from './instance';
 
 export const projectApi = {
-  getAll: async (search: string, page: number): Promise<ProjectType[]> => {
-    const url = `project?limit=10&page=${page}&search=${search}`;
+  getProjectByUserId: async (
+    userId: string,
+    search?: string,
+    page?: number,
+    type?: string,
+  ): Promise<ProjectType[]> => {
+    const url = `project/user/${userId}?limit=10&page=${page}&search=${search}&type=${type}`;
     try {
       const res = await instance.get(url);
       if (res.data && res.data.success === true) {
@@ -51,6 +56,16 @@ export const projectApi = {
     const url = `project/delete/${projectId}`;
     try {
       const res = await instance.delete(url);
+      return res.data;
+    } catch (error: any) {
+      throw new Error(error);
+    }
+  },
+  completedProject: async (projectId: string) => {
+    const url = `project/completed/${projectId}`;
+    const date = Date.now();
+    try {
+      const res = await instance.patch(url, {date});
       return res.data;
     } catch (error: any) {
       throw new Error(error);

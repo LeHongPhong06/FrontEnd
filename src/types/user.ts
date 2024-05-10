@@ -8,6 +8,13 @@ export interface UserType {
     name: string;
     workplaceId: string;
   };
+  roleId: string;
+}
+export interface AdminUpdateUser {
+  fullName: string;
+  phoneNumber: string;
+  workplaceId: string;
+  password: string;
 }
 
 export interface UserFilterPagination {

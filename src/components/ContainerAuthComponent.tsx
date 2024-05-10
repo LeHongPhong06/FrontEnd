@@ -1,17 +1,17 @@
+import {useNavigation} from '@react-navigation/native';
+import {ArrowLeft} from 'iconsax-react-native';
+import React, {ReactNode} from 'react';
 import {
+  Dimensions,
+  ImageBackground,
   SafeAreaView,
+  ScrollView,
   StatusBar,
   StyleSheet,
-  Dimensions,
-  ScrollView,
-  ImageBackground,
   TouchableOpacity,
 } from 'react-native';
-import React, {ReactNode} from 'react';
 import {SectionComponent, SpaceComponent, TextComponent} from '.';
-import {ArrowLeft} from 'iconsax-react-native';
 import {colors, fontFamily} from '../constants';
-import {useNavigation} from '@react-navigation/native';
 
 interface Props {
   children: ReactNode;
@@ -35,7 +35,7 @@ const ContainerAuthComponent = (props: Props) => {
         source={require('../assets/images/bgSplash.png')}
         imageStyle={styles.imageBg}>
         <ScrollView showsVerticalScrollIndicator={false}>
-          <SectionComponent>
+          <SectionComponent styles={styles.section}>
             <SpaceComponent height={StatusBar.currentHeight} />
             {isBack && (
               <>
@@ -64,8 +64,8 @@ const ContainerAuthComponent = (props: Props) => {
   );
 };
 const styles = StyleSheet.create({
+  section: {backgroundColor: 'transparent'},
   imageBg: {
-    width: Dimensions.get('window').width,
     height: Dimensions.get('window').height,
     resizeMode: 'cover',
     flex: 1,

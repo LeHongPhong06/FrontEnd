@@ -1,7 +1,8 @@
 import * as React from 'react';
 import Svg, {Circle, Path} from 'react-native-svg';
-import {RowComponent, TextComponent} from '.';
 import {colors} from '../constants';
+import RowComponent from './RowComponent';
+import TextComponent from './TextComponent';
 
 function SvgNotFoundComponent(props: any) {
   return (

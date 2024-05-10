@@ -24,6 +24,10 @@ export interface UpdateInfoUser {
   phoneNumber: string;
 }
 
+export interface UpdateFcmToken {
+  fcmToken: string[];
+}
+
 export interface UpdateAvatarUser {
   avatar: string;
 }

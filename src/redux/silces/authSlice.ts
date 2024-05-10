@@ -8,6 +8,7 @@ interface InitialState {
   password?: string;
   avatar?: string;
   fcmToken?: string;
+  roleId: string;
   workplaceId?: string;
 }
 
@@ -16,6 +17,7 @@ const initialState: InitialState = {
   fullName: '',
   userId: '',
   email: '',
+  roleId: '',
   phoneNumber: '',
   avatar: '',
   fcmToken: '',

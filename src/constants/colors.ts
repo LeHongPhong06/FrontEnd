@@ -10,8 +10,9 @@ export const colors = {
   gray5: '#d9d9d9',
   gray6: '#F9F9F9',
   link: '#5669FF',
-  danger: '#e74c3c',
+  danger: '#DD0000',
   green: '#2EBC00',
-  blue: '#1677FF',
-  yellow: '#FEFF00',
+  blue: '#3399FF',
+  yellow: '#FFFF00',
+  oranger: '#FF6600',
 };

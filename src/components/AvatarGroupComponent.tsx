@@ -12,7 +12,7 @@ const AvatarGroupComponent = (props: Props) => {
     <RowComponent align="center">
       {urls.map((item, index) => (
         <AvatarComponent
-          size={size}
+          size={size ?? 40}
           url={item}
           key={`avt ${index}`}
           style={{

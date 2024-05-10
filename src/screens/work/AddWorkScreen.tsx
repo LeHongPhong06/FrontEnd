@@ -1,19 +1,4 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import storage from '@react-native-firebase/storage';
-import {useMutation, useQuery, useQueryClient} from '@tanstack/react-query';
-import dayjs from 'dayjs';
-import isSameOrAfter from 'dayjs/plugin/isSameOrAfter';
-import isSameOrBefore from 'dayjs/plugin/isSameOrBefore';
-import React, {useEffect, useState} from 'react';
-import {
-  Alert,
-  PermissionsAndroid,
-  Platform,
-  StyleSheet,
-  ToastAndroid,
-} from 'react-native';
-import {DocumentPickerResponse} from 'react-native-document-picker';
-import RNFetchBold from 'rn-fetch-blob';
 import {projectApi, userApi} from '../../apis';
 import {
   ButtonComponent,
@@ -30,10 +15,19 @@ import {
   UploadFileComponent,
 } from '../../components';
 import {colors} from '../../constants';
-import {useAppSelector} from '../../hooks/useRedux';
+import {useAppSelector} from '../../hooks';
 import {Member, PayloadFileType, ProgressFileType, TaskType} from '../../types';
-dayjs.extend(isSameOrBefore);
-dayjs.extend(isSameOrAfter);
+import {
+  AlertError,
+  ShowToast,
+  getFilePath,
+  isDateSameOrBefore,
+} from '../../utils';
+import storage from '@react-native-firebase/storage';
+import {useMutation, useQuery, useQueryClient} from '@tanstack/react-query';
+import React, {useEffect, useState} from 'react';
+import {PermissionsAndroid, Platform, StyleSheet} from 'react-native';
+import {DocumentPickerResponse} from 'react-native-document-picker';
 const AddWorkScreen = ({navigation}: any) => {
   const queryClient = useQueryClient();
   const {dataAuth} = useAppSelector(state => state.auth);
@@ -44,11 +38,13 @@ const AddWorkScreen = ({navigation}: any) => {
     description: '',
     startDate: new Date(),
     endDate: new Date(),
+    statusId: 'unfinished',
     priority: 'Không',
     documents: [],
     tasks: [],
     member: [],
   };
+  const {roleId, userId} = dataAuth;
   const [work, setWork] = useState(initState);
   const [isDisableBtnAddWork, setIsDisableBtnAddWork] = useState(true);
   const [fileListPicker, setFileListPicker] = useState<
@@ -56,7 +52,9 @@ const AddWorkScreen = ({navigation}: any) => {
   >([]);
   const [progressUploadFile, setProgressUploadFile] =
     useState<ProgressFileType>();
-  const isDateCorrect = dayjs(work.startDate).isSameOrBefore(work.endDate);
+  const [documents, setDocuments] = useState<PayloadFileType[]>([]);
+  const isDateCorrect = isDateSameOrBefore(work.startDate, work.endDate);
+  const isLeader = roleId === 'Leader';
   const {data, isLoading} = useQuery({
     queryKey: ['getUserListByWorkplaceId'],
     queryFn: () => {
@@ -64,6 +62,10 @@ const AddWorkScreen = ({navigation}: any) => {
         return userApi.getUserAllByWorkplaceById(dataAuth.workplaceId);
       }
     },
+  });
+  const mySelf = useQuery({
+    queryKey: ['getDataMySelf', userId],
+    queryFn: () => userApi.getById(userId),
   });
   const handleAddWork = useMutation({
     mutationKey: ['createProject'],
@@ -75,7 +77,7 @@ const AddWorkScreen = ({navigation}: any) => {
         });
         setWork(initState);
         navigation.goBack();
-        ToastAndroid.show('Tạo mới công việc thành công', 2);
+        ShowToast('Tạo mới công việc thành công');
       }
     },
   });
@@ -88,7 +90,6 @@ const AddWorkScreen = ({navigation}: any) => {
     }
   }, []);
   useEffect(() => {
-    // handleGetUserList();
     setWork(initState);
   }, []);
   useEffect(() => {
@@ -97,32 +98,23 @@ const AddWorkScreen = ({navigation}: any) => {
   useEffect(() => {
     if (!isDateCorrect) {
       setIsDisableBtnAddWork(true);
-      Alert.alert('Lỗi', 'Ngày bắt đầu công việc không thể sau ngày kết thúc', [
-        {text: 'Đóng', style: 'cancel'},
-      ]);
+      AlertError('Ngày bắt đầu công việc không thể sau ngày kết thúc');
     } else {
       setIsDisableBtnAddWork(false);
     }
   }, [isDateCorrect]);
   const handleChangeValueAddWork = (
     id: string,
-    val: string | Date | string[] | PayloadFileType | TaskType[] | Member[],
+    val: string | Date | string[] | PayloadFileType[] | TaskType[] | Member[],
   ) => {
     const item: any = {...work};
     item[`${id}`] = val;
     setWork(item);
   };
-  const getFilePath = async (file: DocumentPickerResponse) => {
-    if (Platform.OS === 'ios') {
-      return file.uri;
-    } else {
-      return (await RNFetchBold.fs.stat(file.uri)).path;
-    }
-  };
   const handleSetTaskListForWork = () => {
     const dataTask: TaskType[] = [];
     if (taskList.length > 0) {
-      taskList.forEach(task => {
+      taskList.forEach((task: TaskType) => {
         const startDate = new Date(task.startDate);
         const endDate = new Date(task.endDate);
         const taskBeforeParse = {...task, startDate, endDate};
@@ -148,22 +140,26 @@ const AddWorkScreen = ({navigation}: any) => {
           .ref(path)
           .getDownloadURL()
           .then(url => {
-            const dataImagePicker = {
+            const docs = {
               name: file.name ?? '',
               url,
               size: file.size ?? 0,
             };
-            handleChangeValueAddWork('documents', dataImagePicker);
+            setDocuments([...documents, docs]);
           });
       });
       res.catch(() => {
         console.log('Lỗi khi tải lên storage');
       });
+      handleChangeValueAddWork('documents', documents);
     });
   };
 
   if (!data) {
     return <ModalLoading isVisable={isLoading} />;
+  }
+  if (!mySelf.data) {
+    return <ModalLoading isVisable={mySelf.isLoading} />;
   }
   return (
     <>
@@ -209,7 +205,7 @@ const AddWorkScreen = ({navigation}: any) => {
             />
           </RowComponent>
           <DropdownPickerComponent
-            listPicker={data}
+            listPicker={isLeader ? data : [mySelf.data]}
             required
             value={work.member}
             onSelect={val => handleChangeValueAddWork('member', val)}

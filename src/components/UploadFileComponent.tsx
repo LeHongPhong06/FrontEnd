@@ -1,19 +1,21 @@
 import {CloseCircle, DocumentUpload} from 'iconsax-react-native';
 import React, {useState} from 'react';
-import {StyleSheet, View} from 'react-native';
+import {StyleProp, StyleSheet, View, ViewStyle} from 'react-native';
 import DocumentPicker, {
   DocumentPickerResponse,
 } from 'react-native-document-picker';
 import {RowComponent, TextComponent} from '.';
-import {globalStyles} from '../assets/styles/globalStyle';
+import {globalStyles} from '../assets';
 import {colors} from '../constants';
-import {calcFileSize} from '../utils/calcFileSize';
+import {calcFileSize} from '../utils';
 interface Props {
   onUpload: (file: DocumentPickerResponse[]) => void;
   label?: string;
+  placeholder?: string;
+  style?: StyleProp<ViewStyle>;
 }
 const UploadFileComponent = (props: Props) => {
-  const {onUpload, label} = props;
+  const {onUpload, label, style, placeholder} = props;
   const [filePicker, setFilePicker] = useState<DocumentPickerResponse[]>([]);
   const handleUploadPicker = () => {
     DocumentPicker.pick({
@@ -48,7 +50,7 @@ const UploadFileComponent = (props: Props) => {
       {label && <TextComponent text={label} styles={styles.label} />}
       <RowComponent
         onPress={handleUploadPicker}
-        styles={[globalStyles.inputContainer]}
+        styles={[globalStyles.inputContainer, style]}
         align="center"
         justify="center">
         <RowComponent styles={styles.wapperFileSeleted} gap={6}>
@@ -76,7 +78,7 @@ const UploadFileComponent = (props: Props) => {
           ) : (
             <RowComponent>
               <TextComponent
-                text="Chọn file tài liệu"
+                text={placeholder ?? 'Chọn file tài liệu'}
                 color={colors.gray5}
                 flex={1}
               />

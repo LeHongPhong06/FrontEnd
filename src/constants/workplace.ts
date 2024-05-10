@@ -1,7 +1,7 @@
 export const categoryWorkpalce = [
   {
     id: 1,
-    title: 'Danh sách giảng viên',
+    title: 'Giảng viên',
   },
   {
     id: 2,

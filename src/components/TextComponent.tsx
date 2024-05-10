@@ -3,7 +3,8 @@ import {StyleProp, Text, TextStyle} from 'react-native';
 import {colors, fontFamily} from '../constants';
 
 interface Props {
-  text?: string | number | Date;
+  italic?: boolean;
+  text?: string | number;
   size?: number;
   color?: string;
   font?: string;
@@ -16,6 +17,7 @@ interface Props {
 }
 const TextComponent = (props: Props) => {
   const {
+    italic,
     text,
     styles,
     font,
@@ -39,6 +41,7 @@ const TextComponent = (props: Props) => {
           color: color ?? colors.text,
           fontSize: size ?? 14,
           fontFamily: font ?? fontFamily.medium,
+          fontStyle: italic ? 'italic' : 'normal',
         },
         styles,
       ]}>

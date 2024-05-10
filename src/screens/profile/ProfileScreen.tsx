@@ -25,11 +25,14 @@ import {
   SectionComponent,
   TextComponent,
 } from '../../components';
-import {choisePicker, screens} from '../../constants';
-import {colors} from '../../constants/colors';
-import {fontFamily} from '../../constants/fontFamily';
-import {sectionListProfile} from '../../constants/secionList';
-import {useAppDispatch, useAppSelector} from '../../hooks/useRedux';
+import {
+  choisePicker,
+  colors,
+  fontFamily,
+  screens,
+  sectionListProfile,
+} from '../../constants';
+import {useAppDispatch, useAppSelector} from '../../hooks';
 import {removeAuth} from '../../redux/silces/authSlice';
 import {ProgressFileType} from '../../types';
 

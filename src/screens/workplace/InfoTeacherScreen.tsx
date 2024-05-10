@@ -1,7 +1,3 @@
-/* eslint-disable react-hooks/exhaustive-deps */
-import {Call, Sms} from 'iconsax-react-native';
-import React, {useEffect, useState} from 'react';
-import {Linking, StyleSheet} from 'react-native';
 import {userApi} from '../../apis';
 import {
   AvatarComponent,
@@ -14,24 +10,21 @@ import {
   TextComponent,
 } from '../../components';
 import {colors, fontFamily} from '../../constants';
-import {UserType} from '../../types';
+import {useQuery} from '@tanstack/react-query';
+import {Call, Sms} from 'iconsax-react-native';
+import React from 'react';
+import {Linking, StyleSheet} from 'react-native';
 
-const InfoTeacherScreen = ({route}: any) => {
+const InfodataScreen = ({route}: any) => {
   const {userId} = route.params;
-  const [teacher, setTeacher] = useState<UserType>();
-  const handleGetDataTeacher = async () => {
-    if (userId) {
-      try {
-        const res = await userApi.getById(userId);
-        setTeacher(res.data);
-      } catch (error) {
-        console.log('error :>> ', error);
+  const {data, isLoading} = useQuery({
+    queryKey: ['getDatadataDetial', userId],
+    queryFn: () => {
+      if (userId) {
+        return userApi.getById(userId);
       }
-    }
-  };
-  useEffect(() => {
-    handleGetDataTeacher();
-  }, []);
+    },
+  });
   const handleContact = (type: 'email' | 'phoneNumber', value: string) => {
     if (type === 'email') {
       Linking.openURL(`mailto:${value}`);
@@ -41,10 +34,10 @@ const InfoTeacherScreen = ({route}: any) => {
     }
   };
   if (!userId) {
-    return null;
-  }
-  if (!teacher) {
     return <ModalLoading isVisable />;
+  }
+  if (!data) {
+    return <ModalLoading isVisable={isLoading} />;
   }
   return (
     <ContainerComponent back title="Thông tin giảng viên">
@@ -53,8 +46,8 @@ const InfoTeacherScreen = ({route}: any) => {
         direction="column"
         align="center"
         gap={20}>
-        <AvatarComponent size={100} url={teacher.avatar} />
-        <TextComponent text={teacher.fullName} size={18} />
+        <AvatarComponent size={100} url={data.avatar} />
+        <TextComponent text={data.fullName} size={18} />
         <TextComponent text="Đã hoàn thành 4 công việc được giao" />
       </RowComponent>
       <SpaceComponent height={20} />
@@ -67,10 +60,10 @@ const InfoTeacherScreen = ({route}: any) => {
       <SectionComponent>
         <RowComponent styles={styles.wapperInfo} direction="column" gap={16}>
           <RowComponent align="center" justify="space-between">
-            <TextComponent text={teacher.email} />
+            <TextComponent text={data.email} />
             <ButtonTextComponent
               bgColor={colors.white}
-              onPress={() => handleContact('email', teacher.email)}
+              onPress={() => handleContact('email', data.email)}
               styles={styles.btnContact}
               title="Gửi"
               textColor={colors.primary}
@@ -78,11 +71,11 @@ const InfoTeacherScreen = ({route}: any) => {
             />
           </RowComponent>
           <RowComponent align="center" justify="space-between">
-            <TextComponent text={`Số điện thoại: ${teacher.phoneNumber}`} />
+            <TextComponent text={`Số điện thoại: ${data.phoneNumber}`} />
             <ButtonTextComponent
               bgColor={colors.danger}
               borderColor={colors.danger}
-              onPress={() => handleContact('phoneNumber', teacher.phoneNumber)}
+              onPress={() => handleContact('phoneNumber', data.phoneNumber)}
               styles={styles.btnContact}
               title="Gọi"
               textColor={colors.white}
@@ -122,4 +115,4 @@ const styles = StyleSheet.create({
     paddingVertical: 20,
   },
 });
-export default InfoTeacherScreen;
+export default InfodataScreen;

@@ -9,6 +9,7 @@ import {
   SpaceComponent,
   TextComponent,
 } from '.';
+LocaleConfig.defaultLocale = 'vi';
 LocaleConfig.locales['vi'] = {
   monthNames: [
     'Tháng 1',
@@ -42,7 +43,6 @@ LocaleConfig.locales['vi'] = {
   dayNamesShort: ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'],
   today: 'Hôm nay',
 };
-LocaleConfig.defaultLocale = 'vi';
 interface Props {
   selected: string;
   onSelect: (date: string) => void;

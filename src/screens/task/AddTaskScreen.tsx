@@ -1,27 +1,25 @@
+import {useQuery} from '@tanstack/react-query';
 import {formatISO} from 'date-fns';
-import dayjs from 'dayjs';
-import isSameOrAfter from 'dayjs/plugin/isSameOrAfter';
 import React, {useEffect, useState} from 'react';
-import {Alert, StyleSheet} from 'react-native';
+import {StyleSheet} from 'react-native';
 import uuid from 'react-native-uuid';
+import {userApi} from '../../apis';
 import {
   ButtonComponent,
   ContainerComponent,
+  DatePickerComponent,
   DropdownSingleComponent,
   InputComponent,
+  ModalLoading,
   PriorityComponent,
   RowComponent,
   SectionComponent,
-  DatePickerComponent,
-  ModalLoading,
 } from '../../components';
 import {colors} from '../../constants';
-import {useAppDispatch, useAppSelector} from '../../hooks/useRedux';
+import {useAppDispatch, useAppSelector} from '../../hooks';
 import {createTask} from '../../redux/silces/taskSlice';
-import {userApi} from '../../apis';
 import {UserType} from '../../types';
-import {useQuery} from '@tanstack/react-query';
-dayjs.extend(isSameOrAfter);
+import {AlertError, isDateSameOrAfter} from '../../utils';
 const AddTaskScreen = ({navigation, route}: any) => {
   const {userIdList} = route.params;
   const dispatch = useAppDispatch();
@@ -31,21 +29,19 @@ const AddTaskScreen = ({navigation, route}: any) => {
     taskId,
     title: '',
     description: '',
+    statusId: 'unfinished',
     startDate: new Date(),
     endDate: new Date(),
     priority: 'Không',
     performById: '',
-    statusId: 'Chưa hoàn thành',
   };
   const [task, setTask] = useState(initialState);
   const [isDisable, setIsDisable] = useState(false);
-  const isDateCorrect = dayjs(task.endDate).isSameOrAfter(task.startDate);
+  const isDateCorrect = isDateSameOrAfter(task.endDate, task.startDate);
   useEffect(() => {
     if (!isDateCorrect) {
       setIsDisable(true);
-      Alert.alert('Lỗi', 'Ngày bắt đầu công việc không thể sau ngày kết thúc', [
-        {text: 'Đóng', style: 'cancel'},
-      ]);
+      AlertError('Ngày bắt đầu công việc không thể sau ngày kết thúc');
     } else {
       setIsDisable(false);
     }

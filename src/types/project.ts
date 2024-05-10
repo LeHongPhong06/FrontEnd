@@ -1,5 +1,4 @@
 import {PayloadFileType, TaskType} from '.';
-import {CommentType} from './comment';
 
 export interface ProjectType {
   projectId?: string;
@@ -10,13 +9,13 @@ export interface ProjectType {
   priority: string;
   createById?: string;
   tasks: TaskType[];
+  statusId: string;
   document: PayloadFileType[];
   member: string[];
   status: {
     statusId: string;
     name: string;
   };
-  comment: CommentType[];
   memberProject: Member[];
 }
 

@@ -3,6 +3,7 @@ import {useNavigation} from '@react-navigation/native';
 import {ArrowLeft2, Calendar} from 'iconsax-react-native';
 import React, {ReactNode} from 'react';
 import {
+  Dimensions,
   SafeAreaView,
   ScrollView,
   StyleProp,
@@ -18,21 +19,22 @@ import {
   SpaceComponent,
   TextComponent,
 } from '.';
-import {globalStyles} from '../assets/styles/globalStyle';
+import {globalStyles} from '../assets';
 import {colors, fontFamily, screens} from '../constants';
-import {useAppSelector} from '../hooks/useRedux';
+import {useAppSelector} from '../hooks';
 
 interface Props {
   back?: boolean;
   title?: string;
   children: ReactNode;
   isScroll?: boolean;
+  header?: ReactNode;
   styles?: StyleProp<ViewStyle>;
 }
 const ContainerComponent = (props: Props) => {
-  const {children, styles, isScroll, title, back} = props;
-  const {dataAuth} = useAppSelector(state => state.auth);
+  const {children, styles, isScroll, title, back, header} = props;
   const navigation: any = useNavigation();
+  const {dataAuth} = useAppSelector(state => state.auth);
   const onPressBack = () => {
     navigation.goBack();
   };
@@ -64,7 +66,9 @@ const ContainerComponent = (props: Props) => {
           {title && <SpaceComponent width={20} />}
           {title && (
             <TextComponent
+              numberOfLines={1}
               text={title}
+              styles={style.title}
               size={17}
               font={fontFamily.semibold}
               color={colors.white}
@@ -84,7 +88,7 @@ const ContainerComponent = (props: Props) => {
     <SafeAreaView style={[globalStyles.container]}>
       {isScroll && (
         <>
-          {Header()}
+          {header ?? Header()}
           <ScrollView
             showsVerticalScrollIndicator={false}
             style={[globalStyles.container]}>
@@ -94,7 +98,7 @@ const ContainerComponent = (props: Props) => {
       )}
       {!isScroll && (
         <View style={[globalStyles.container]}>
-          {Header()}
+          {header ?? Header()}
           {Container()}
         </View>
       )}
@@ -109,6 +113,9 @@ const style = StyleSheet.create({
     paddingBottom: 12,
     paddingTop: 40,
     backgroundColor: colors.primary,
+  },
+  title: {
+    maxWidth: Dimensions.get('window').width * 0.7,
   },
   btnBack: {
     padding: 2,

@@ -1,6 +1,7 @@
 import {Call, User} from 'iconsax-react-native';
 import React, {useState} from 'react';
 import {StyleSheet} from 'react-native';
+import {userApi} from '../../apis';
 import {
   ButtonTextComponent,
   ContainerComponent,
@@ -9,8 +10,7 @@ import {
   TextComponent,
 } from '../../components';
 import {colors} from '../../constants';
-import {useAppSelector} from '../../hooks/useRedux';
-import {userApi} from '../../apis';
+import {useAppSelector} from '../../hooks';
 
 const AccountScreen = () => {
   const {dataAuth} = useAppSelector(state => state.auth);

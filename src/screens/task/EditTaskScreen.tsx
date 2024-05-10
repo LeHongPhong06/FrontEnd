@@ -1,9 +1,3 @@
-import {useQuery} from '@tanstack/react-query';
-import {formatISO} from 'date-fns';
-import dayjs from 'dayjs';
-import isSameOrAfter from 'dayjs/plugin/isSameOrAfter';
-import React, {useEffect, useState} from 'react';
-import {Alert, StyleSheet} from 'react-native';
 import {userApi} from '../../apis';
 import {
   ButtonComponent,
@@ -17,9 +11,14 @@ import {
   SectionComponent,
 } from '../../components';
 import {colors} from '../../constants';
-import {useAppDispatch, useAppSelector} from '../../hooks/useRedux';
+import {useAppDispatch, useAppSelector} from '../../hooks';
+import {AlertError, isDateSameOrAfter} from '../../utils';
+import {useQuery} from '@tanstack/react-query';
+import {formatISO} from 'date-fns';
+import React, {useEffect, useState} from 'react';
+import {StyleSheet} from 'react-native';
 import {updateTask} from '../../redux/silces/taskSlice';
-dayjs.extend(isSameOrAfter);
+
 const EditTaskScreen = ({navigation, route}: any) => {
   const {dataTask} = route.params;
   const initialValues = {
@@ -39,13 +38,11 @@ const EditTaskScreen = ({navigation, route}: any) => {
       }
     },
   });
-  const isDateCorrect = dayjs(task.endDate).isSameOrAfter(task.startDate);
+  const isDateCorrect = isDateSameOrAfter(task.startDate, task.endDate);
   useEffect(() => {
     if (!isDateCorrect) {
       setIsDisable(true);
-      Alert.alert('Lỗi', 'Ngày bắt đầu công việc không thể sau ngày kết thúc', [
-        {text: 'Đóng', style: 'cancel'},
-      ]);
+      AlertError('Ngày bắt đầu công việc không thể sau ngày kết thúc');
     } else {
       setIsDisable(false);
     }
@@ -63,7 +60,7 @@ const EditTaskScreen = ({navigation, route}: any) => {
     navigation.goBack();
   };
   if (!dataTask) {
-    return null;
+    return <ModalLoading isVisable />;
   }
   if (!data) {
     return <ModalLoading isVisable={isLoading} />;

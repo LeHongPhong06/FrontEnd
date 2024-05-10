@@ -1,8 +1,4 @@
-import storage from '@react-native-firebase/storage';
-import {CloseCircle} from 'iconsax-react-native';
-import React, {useState} from 'react';
-import {Image, StyleSheet} from 'react-native';
-import {ImageOrVideo} from 'react-native-image-crop-picker';
+import {workplaceApi} from '../../apis';
 import {
   ButtonImagePickerComponent,
   ButtonTextComponent,
@@ -15,9 +11,16 @@ import {
 } from '../../components';
 import {colors} from '../../constants';
 import {ProgressFileType} from '../../types';
-import {calcFileSize} from '../../utils/calcFileSize';
+import {ShowToast, calcFileSize} from '../../utils';
+import storage from '@react-native-firebase/storage';
+import {useMutation, useQueryClient} from '@tanstack/react-query';
+import {CloseCircle} from 'iconsax-react-native';
+import React, {useState} from 'react';
+import {Image, StyleSheet} from 'react-native';
+import {ImageOrVideo} from 'react-native-image-crop-picker';
 
-const UpdateWorkplaceScreen = ({route}: any) => {
+const UpdateWorkplaceScreen = ({navigation, route}: any) => {
+  const queryClient = useQueryClient();
   const {workplaceInfo} = route.params;
   const initialState = {
     logo: workplaceInfo.logo ?? '',
@@ -32,6 +35,20 @@ const UpdateWorkplaceScreen = ({route}: any) => {
     data[`${id}`] = value;
     setWorkplace(data);
   };
+  const updateWorkplace = useMutation({
+    mutationKey: ['updateWorkplace'],
+    mutationFn: () =>
+      workplaceApi.updateWorkplace(workplaceInfo.workplaceId, workplace),
+    onSuccess: res => {
+      if (res.success === true) {
+        queryClient.invalidateQueries({
+          queryKey: ['getInfowWorkplace', workplaceInfo.workplaceId],
+        });
+        navigation.goBack();
+        ShowToast('Cập nhật thông tin bộ môn thành công');
+      }
+    },
+  });
   const handleUploadFileToStorage = () => {
     if (filePicker) {
       const path = `/documents/${
@@ -60,7 +77,8 @@ const UpdateWorkplaceScreen = ({route}: any) => {
     setFilePicker(undefined);
   };
   const handleUpdateWorkplace = () => {
-    handleUploadFileToStorage();
+    // handleUploadFileToStorage();
+    updateWorkplace.mutate();
   };
   if (!workplaceInfo) {
     return null;

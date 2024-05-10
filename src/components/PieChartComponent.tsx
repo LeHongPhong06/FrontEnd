@@ -1,8 +1,8 @@
+import {colors} from '../constants';
 import React from 'react';
 import {Dimensions, StyleSheet} from 'react-native';
 import {PieChart} from 'react-native-chart-kit';
 import {ChartConfig} from 'react-native-chart-kit/dist/HelperTypes';
-import {colors} from '../constants';
 interface Prop {
   data: any;
 }

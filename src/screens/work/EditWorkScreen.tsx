@@ -1,18 +1,4 @@
-import storage from '@react-native-firebase/storage';
-import {useMutation, useQuery} from '@tanstack/react-query';
-import dayjs from 'dayjs';
-import isSameOrBefore from 'dayjs/plugin/isSameOrBefore';
-import React, {useEffect, useState} from 'react';
-import {
-  Alert,
-  PermissionsAndroid,
-  Platform,
-  StyleSheet,
-  ToastAndroid,
-} from 'react-native';
-import {DocumentPickerResponse} from 'react-native-document-picker';
-import RNFetchBold from 'rn-fetch-blob';
-import {projectApi, userApi} from '../../apis';
+import {memberApi, projectApi, userApi} from '../../apis';
 import {
   ButtonComponent,
   ContainerComponent,
@@ -26,10 +12,23 @@ import {
   UploadFileComponent,
 } from '../../components';
 import {colors} from '../../constants';
-import {useAppSelector} from '../../hooks/useRedux';
-import {Member, PayloadFileType, ProgressFileType} from '../../types';
-dayjs.extend(isSameOrBefore);
-const EditWorkScreen = ({route}: any) => {
+import {useAppSelector} from '../../hooks';
+import {
+  Member,
+  MemberProjectUpdate,
+  PayloadFileType,
+  ProgressFileType,
+} from '../../types';
+import {AlertError, ShowToast, isDateSameOrBefore} from '../../utils';
+import storage from '@react-native-firebase/storage';
+import {useMutation, useQuery, useQueryClient} from '@tanstack/react-query';
+import React, {useEffect, useState} from 'react';
+import {PermissionsAndroid, Platform, StyleSheet} from 'react-native';
+import {DocumentPickerResponse} from 'react-native-document-picker';
+import RNFetchBold from 'rn-fetch-blob';
+
+const EditWorkScreen = ({navigation, route}: any) => {
+  const queryClient = useQueryClient();
   const {dataWork} = route.params;
   const initState = {
     title: '',
@@ -37,18 +36,19 @@ const EditWorkScreen = ({route}: any) => {
     startDate: new Date(),
     endDate: new Date(),
     priority: 'Không',
-    documents: [],
-    memberProject: [],
   };
   const {dataAuth} = useAppSelector(state => state.auth);
   const [work, setWork] = useState(initState);
+  const [memberProject, setMemberProject] = useState<Member[]>(
+    dataWork?.memberProject ?? [],
+  );
   const [isDisableEditAddWork, setIsDisableEditAddWork] = useState(true);
   const [fileListPicker, setFileListPicker] = useState<
     DocumentPickerResponse[]
   >([]);
   const [progressUploadFile, setProgressUploadFile] =
     useState<ProgressFileType>();
-  const isDateCorrect = dayjs(work.startDate).isSameOrBefore(work.endDate);
+  const isDateCorrect = isDateSameOrBefore(work.startDate, work.endDate);
   const {data, isLoading} = useQuery({
     queryKey: ['getUserListByWorkplaceId'],
     queryFn: () => {
@@ -64,12 +64,14 @@ const EditWorkScreen = ({route}: any) => {
         return await projectApi.updateProject(dataWork.projectId, work);
       }
     },
-    onSuccess: res => {
+    onSuccess: async res => {
       if (res.success === true) {
-        ToastAndroid.show(
-          `Cập nhật công việc thành công ${res.data?.title}`,
-          2,
-        );
+        await queryClient.invalidateQueries({
+          queryKey: ['getDetailProject', dataWork.projectId],
+          exact: true,
+        });
+        ShowToast(`Cập nhật công việc ${res.data?.title} thành công`);
+        navigation.goBack();
       }
     },
   });
@@ -93,9 +95,7 @@ const EditWorkScreen = ({route}: any) => {
   useEffect(() => {
     if (!isDateCorrect) {
       setIsDisableEditAddWork(true);
-      Alert.alert('Lỗi', 'Ngày bắt đầu công việc không thể sau ngày kết thúc', [
-        {text: 'Đóng', style: 'cancel'},
-      ]);
+      AlertError('Ngày bắt đầu công việc không thể sau ngày kết thúc');
     } else {
       setIsDisableEditAddWork(false);
     }
@@ -145,66 +145,98 @@ const EditWorkScreen = ({route}: any) => {
       });
     });
   };
+  const handleConfirmChangeMember = useMutation({
+    mutationKey: ['updateMemberProject'],
+    mutationFn: (member: Member[]) => {
+      const dataMember: MemberProjectUpdate[] = [];
+      if (member.length > 0) {
+        member.forEach(item =>
+          dataMember.push({
+            projectId: dataWork.projectId,
+            userId: item.userId,
+          }),
+        );
+      }
+      return memberApi.updateMemberByProjectId(dataWork.projectId, dataMember);
+    },
+    onSuccess: async res => {
+      if (res.success === true) {
+        setMemberProject(res.data);
+        await queryClient.invalidateQueries({
+          queryKey: ['getUserListByWorkplaceId', dataWork.projectId],
+          exact: true,
+        });
+        ShowToast('Cập nhật người tham gia thành công');
+      }
+    },
+  });
   if (!dataWork) {
-    return null;
+    return <ModalLoading isVisable />;
   }
   if (!data) {
     return <ModalLoading isVisable={isLoading} />;
   }
   return (
-    <ContainerComponent title="Chỉnh sửa công việc" back isScroll>
-      <SectionComponent>
-        <InputComponent
-          lable="Tiêu đề"
-          placeholder="Tiêu đề công việc"
-          value={work.title}
-          onChange={val => handleChangeValue('title', val)}
-        />
-        <InputComponent
-          lable="Mô tả"
-          placeholder="Mô tả công việc"
-          value={work.description}
-          onChange={val => handleChangeValue('description', val)}
-        />
-        <PriorityComponent
-          label="Độ ưu tiên"
-          value={work.priority}
-          onSelect={val => handleChangeValue('priority', val)}
-        />
-        <RowComponent gap={20} align="center">
-          <DatePickerComponent
-            type="date"
-            lable="Ngày bắt đầu"
-            value={work.startDate}
-            placeholder="Chọn ngày"
-            onSelect={date => handleChangeValue('startDate', date)}
+    <>
+      <ContainerComponent title="Chỉnh sửa công việc" back isScroll>
+        <SectionComponent>
+          <InputComponent
+            lable="Tiêu đề"
+            placeholder="Tiêu đề công việc"
+            value={work.title}
+            onChange={val => handleChangeValue('title', val)}
           />
-          <DatePickerComponent
-            type="date"
-            lable="Ngày kết thúc"
-            placeholder="Chọn ngày"
-            value={work.endDate}
-            onSelect={date => handleChangeValue('endDate', date)}
+          <InputComponent
+            lable="Mô tả"
+            placeholder="Mô tả công việc"
+            value={work.description}
+            onChange={val => handleChangeValue('description', val)}
           />
-        </RowComponent>
-        <DropdownPickerComponent
-          listPicker={data}
-          value={work.memberProject}
-          label="Người tham gia"
-          onSelect={val => handleChangeValue('memberProject', val)}
-        />
-        <UploadFileComponent
-          label="Tài liệu"
-          onUpload={files => setFileListPicker(files)}
-        />
-        <ButtonComponent
-          disable={isDisableEditAddWork}
-          title="Chỉnh sửa công việc"
-          onPress={() => handleEditWork.mutate()}
-          textStyles={styles.textBtnEditWork}
-        />
-      </SectionComponent>
-    </ContainerComponent>
+          <PriorityComponent
+            label="Độ ưu tiên"
+            value={work.priority}
+            onSelect={val => handleChangeValue('priority', val)}
+          />
+          <RowComponent gap={20} align="center">
+            <DatePickerComponent
+              type="date"
+              lable="Ngày bắt đầu"
+              value={work.startDate}
+              placeholder="Chọn ngày"
+              onSelect={date => handleChangeValue('startDate', date)}
+            />
+            <DatePickerComponent
+              type="date"
+              lable="Ngày kết thúc"
+              placeholder="Chọn ngày"
+              value={work.endDate}
+              onSelect={date => handleChangeValue('endDate', date)}
+            />
+          </RowComponent>
+          <DropdownPickerComponent
+            listPicker={data}
+            value={memberProject}
+            label="Người tham gia"
+            onSelect={val => handleConfirmChangeMember.mutate(val)}
+          />
+          <UploadFileComponent
+            label="Tài liệu"
+            onUpload={files => setFileListPicker(files)}
+          />
+          <ButtonComponent
+            disable={isDisableEditAddWork}
+            title="Chỉnh sửa công việc"
+            onPress={() => handleEditWork.mutate()}
+            textStyles={styles.textBtnEditWork}
+          />
+        </SectionComponent>
+      </ContainerComponent>
+      <ModalLoading
+        isVisable={
+          handleConfirmChangeMember.isPending || handleEditWork.isPending
+        }
+      />
+    </>
   );
 };
 const styles = StyleSheet.create({

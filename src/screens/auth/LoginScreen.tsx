@@ -1,10 +1,10 @@
-/* eslint-disable react-native/no-inline-styles */
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {useNavigation} from '@react-navigation/native';
+import {useMutation} from '@tanstack/react-query';
 import {ArrowRight, Lock, Sms} from 'iconsax-react-native';
 import React, {useEffect, useState} from 'react';
-import {Alert, Dimensions, Image, StyleSheet, Switch} from 'react-native';
-import {authApi} from '../../apis/auth';
+import {Dimensions, Image, StyleSheet} from 'react-native';
+import {authApi} from '../../apis';
 import {
   ButtonComponent,
   CircleComponent,
@@ -17,19 +17,15 @@ import {
   SpaceComponent,
   TextComponent,
 } from '../../components';
-import {colors} from '../../constants/colors';
-import {fontFamily} from '../../constants/fontFamily';
-import {screens} from '../../constants/screens';
-import {useAppDispatch} from '../../hooks/useRedux';
+import {colors, fontFamily, screens} from '../../constants';
+import {useAppDispatch} from '../../hooks';
 import {addAuth} from '../../redux/silces/authSlice';
-import {Validate} from '../../utils/validate';
+import {AlertError, Validate} from '../../utils';
 
 const LoginScreen = () => {
   const dispatch = useAppDispatch();
   const navigation: any = useNavigation();
-  const [isLoadingLogin, setIsLoadingLogin] = useState(false);
   const [isDisabledLogin, setIsDisabledLogin] = useState(true);
-  const [remember, setRemember] = useState(false);
   const [payloadLogin, setPayloadLogin] = useState({
     email: '',
     password: '',
@@ -44,14 +40,7 @@ const LoginScreen = () => {
       setIsDisabledLogin(true);
     }
   }, [email, password, isEmail, isLenghtPassword]);
-  // useEffect(() => {
-  //   handleRemoveItem();
-  // }, []);
-  // const handleRemoveItem = async () => {
-  //   try {
-  //     await AsyncStorage.removeItem('auth');
-  //   } catch (error) {}
-  // };
+
   const handleChangePayloadLogin = (id: string, value: string | boolean) => {
     const item: any = {...payloadLogin};
     item[`${id}`] = value;
@@ -63,50 +52,23 @@ const LoginScreen = () => {
   const handlePressForgotPassword = () => {
     navigation.navigate(screens.FORGOTPASSWORD_SCREEN);
   };
-  const handlePressLogin = async () => {
-    setIsLoadingLogin(true);
-    // try {
-    //   const response = await instance.post('auth/login', payloadLogin);
-    //   const res = await response.data;
-    //   if (res.success === true) {
-    //     const auth = JSON.stringify(res.data);
-    //     await AsyncStorage.setItem('auth', auth);
-    //     dispatch(addAuth(res.data));
-    //     setIsLoadingLogin(false);
-    //   } else {
-    //     setIsLoadingLogin(false);
-    //     Alert.alert('Thất bại', res.message, [
-    //       {
-    //         text: 'Đóng',
-    //         style: 'cancel',
-    //       },
-    //     ]);
-    //   }
-    // } catch (error: any) {
-    //   setIsLoadingLogin(false);
-    //   console.log('err :>> ', error);
-    // }
-    try {
-      const res = await authApi.login(payloadLogin);
-      if (res.success === true) {
-        const auth = JSON.stringify(res.data);
-        await AsyncStorage.setItem('auth', auth);
-        dispatch(addAuth(res.data));
-        setIsLoadingLogin(false);
-      } else {
-        setIsLoadingLogin(false);
-        Alert.alert('Thất bại', res.message, [
-          {
-            text: 'Đóng',
-            style: 'cancel',
-          },
-        ]);
+  const login = useMutation({
+    mutationKey: ['login'],
+    mutationFn: () => authApi.login(payloadLogin),
+    onSuccess: async res => {
+      try {
+        if (res.success === true) {
+          const auth = JSON.stringify(res.data);
+          await AsyncStorage.setItem('auth', auth);
+          dispatch(addAuth(res.data));
+        } else {
+          AlertError(res.message);
+        }
+      } catch (error) {
+        console.log('err :>> ', error);
       }
-    } catch (error: any) {
-      setIsLoadingLogin(false);
-      console.log('err :>> ', error);
-    }
-  };
+    },
+  });
   return (
     <>
       <ContainerAuthComponent>
@@ -142,38 +104,12 @@ const LoginScreen = () => {
           value={password}
           onChange={val => handleChangePayloadLogin('password', val)}
         />
-        <SpaceComponent height={4} />
-        <RowComponent
-          align="center"
-          justify="space-between"
-          styles={{
-            flexWrap: 'wrap',
-          }}>
-          <RowComponent align="center">
-            <Switch
-              value={remember}
-              trackColor={{false: colors.gray2, true: colors.primary}}
-              thumbColor={remember ? colors.white : colors.primary}
-              onValueChange={() => setRemember(!remember)}
-            />
-            <TextComponent
-              size={12}
-              text="Remember me"
-              styles={{marginLeft: remember ? 4 : 0}}
-            />
-          </RowComponent>
-          <TextComponent
-            size={12}
-            text="Quên mật khẩu?"
-            onPress={handlePressForgotPassword}
-          />
-        </RowComponent>
-        <SpaceComponent height={30} />
-        <SectionComponent>
+        <SpaceComponent height={10} />
+        <SectionComponent styles={styles.section}>
           <ButtonComponent
             disable={isDisabledLogin}
             title="Đăng nhập"
-            onPress={handlePressLogin}
+            onPress={() => login.mutate()}
             textColor={colors.white}
             textStyles={styles.textBtnLogin}
             suffix={
@@ -193,21 +129,29 @@ const LoginScreen = () => {
           <SpaceComponent height={6} />
           <SocialLogin />
         </SectionComponent>
-        <RowComponent gap={8} align="center" justify="center">
-          <TextComponent text="Bạn chưa có tài khoản?" size={13} />
+        <RowComponent gap={12} align="center" direction="column">
           <TextComponent
-            text="Đăng ký"
             size={13}
-            color={colors.primary}
-            onPress={handlePressRegisterScreen}
+            text="Quên mật khẩu?"
+            onPress={handlePressForgotPassword}
           />
+          <RowComponent gap={4} align="center">
+            <TextComponent text="Bạn chưa có tài khoản?" size={13} />
+            <TextComponent
+              text="Đăng ký"
+              size={13}
+              color={colors.primary}
+              onPress={handlePressRegisterScreen}
+            />
+          </RowComponent>
         </RowComponent>
       </ContainerAuthComponent>
-      <ModalLoading isVisable={isLoadingLogin} />
+      <ModalLoading isVisable={login.isPending} />
     </>
   );
 };
 const styles = StyleSheet.create({
+  section: {backgroundColor: 'transparent'},
   logo: {
     paddingVertical: 42,
   },
