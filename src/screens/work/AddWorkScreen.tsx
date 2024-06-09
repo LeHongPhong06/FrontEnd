@@ -1,4 +1,9 @@
 /* eslint-disable react-hooks/exhaustive-deps */
+import storage from '@react-native-firebase/storage';
+import {useMutation, useQuery, useQueryClient} from '@tanstack/react-query';
+import React, {useEffect, useState} from 'react';
+import {StyleSheet} from 'react-native';
+import {DocumentPickerResponse} from 'react-native-document-picker';
 import {projectApi, userApi} from '../../apis';
 import {
   ButtonComponent,
@@ -23,11 +28,6 @@ import {
   getFilePath,
   isDateSameOrBefore,
 } from '../../utils';
-import storage from '@react-native-firebase/storage';
-import {useMutation, useQuery, useQueryClient} from '@tanstack/react-query';
-import React, {useEffect, useState} from 'react';
-import {PermissionsAndroid, Platform, StyleSheet} from 'react-native';
-import {DocumentPickerResponse} from 'react-native-document-picker';
 const AddWorkScreen = ({navigation}: any) => {
   const queryClient = useQueryClient();
   const {dataAuth} = useAppSelector(state => state.auth);
@@ -50,6 +50,7 @@ const AddWorkScreen = ({navigation}: any) => {
   const [fileListPicker, setFileListPicker] = useState<
     DocumentPickerResponse[]
   >([]);
+  console.log('object :>> ', fileListPicker);
   const [progressUploadFile, setProgressUploadFile] =
     useState<ProgressFileType>();
   const [documents, setDocuments] = useState<PayloadFileType[]>([]);
@@ -69,7 +70,12 @@ const AddWorkScreen = ({navigation}: any) => {
   });
   const handleAddWork = useMutation({
     mutationKey: ['createProject'],
-    mutationFn: () => projectApi.createProject(work),
+    mutationFn: async () => {
+      if (fileListPicker.length > 0) {
+        await handleUploadFileToStorage();
+      }
+      return projectApi.createProject(work);
+    },
     onSuccess: res => {
       if (res.success === true) {
         queryClient.invalidateQueries({
@@ -81,14 +87,7 @@ const AddWorkScreen = ({navigation}: any) => {
       }
     },
   });
-  useEffect(() => {
-    if (Platform.OS === 'android') {
-      PermissionsAndroid.requestMultiple([
-        PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE,
-        PermissionsAndroid.PERMISSIONS.READ_EXTERNAL_STORAGE,
-      ]);
-    }
-  }, []);
+
   useEffect(() => {
     setWork(initState);
   }, []);
@@ -123,7 +122,7 @@ const AddWorkScreen = ({navigation}: any) => {
     }
     handleChangeValueAddWork('tasks', dataTask);
   };
-  const handleUploadFileToStorage = () => {
+  const handleUploadFileToStorage = async () => {
     fileListPicker.forEach(async file => {
       const path = `/documents/${file.name}`;
       const uri = await getFilePath(file);
@@ -148,10 +147,11 @@ const AddWorkScreen = ({navigation}: any) => {
             setDocuments([...documents, docs]);
           });
       });
-      res.catch(() => {
+      handleChangeValueAddWork('documents', documents);
+      res.catch(err => {
+        console.log('err :>> ', err);
         console.log('Lỗi khi tải lên storage');
       });
-      handleChangeValueAddWork('documents', documents);
     });
   };
 

@@ -1,3 +1,9 @@
+import storage from '@react-native-firebase/storage';
+import {useMutation, useQuery, useQueryClient} from '@tanstack/react-query';
+import React, {useEffect, useState} from 'react';
+import {PermissionsAndroid, Platform, StyleSheet} from 'react-native';
+import {DocumentPickerResponse} from 'react-native-document-picker';
+import RNFetchBold from 'rn-fetch-blob';
 import {memberApi, projectApi, userApi} from '../../apis';
 import {
   ButtonComponent,
@@ -20,12 +26,6 @@ import {
   ProgressFileType,
 } from '../../types';
 import {AlertError, ShowToast, isDateSameOrBefore} from '../../utils';
-import storage from '@react-native-firebase/storage';
-import {useMutation, useQuery, useQueryClient} from '@tanstack/react-query';
-import React, {useEffect, useState} from 'react';
-import {PermissionsAndroid, Platform, StyleSheet} from 'react-native';
-import {DocumentPickerResponse} from 'react-native-document-picker';
-import RNFetchBold from 'rn-fetch-blob';
 
 const EditWorkScreen = ({navigation, route}: any) => {
   const queryClient = useQueryClient();
@@ -167,6 +167,8 @@ const EditWorkScreen = ({navigation, route}: any) => {
           exact: true,
         });
         ShowToast('Cập nhật người tham gia thành công');
+      } else {
+        AlertError(res.message);
       }
     },
   });

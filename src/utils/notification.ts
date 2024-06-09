@@ -1,6 +1,8 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import messaging from '@react-native-firebase/messaging';
+import axios from 'axios';
 import {userApi} from '../apis';
+import {globalApp} from '../constants';
 
 export class HandleNotification {
   static checkNotificationPersion = async () => {
@@ -37,53 +39,38 @@ export class HandleNotification {
       }
     }
   };
-  // static sendNotification = async ({
-  //   userId,
-  //   title,
-  //   body,
-  //   taskId,
-  // }: {
-  //   userId: string;
-  //   title: string;
-  //   body: string;
-  //   taskId: string;
-  // }) => {
-  //   try {
-  //     // save to firestore
-  //     const user = await userApi.getById(userId);
-
-  //     // send notification
-
-  //     if (user) {
-  //       var myHeaders = new Headers();
-  //       myHeaders.append('Content-Type', 'application/json');
-  //       myHeaders.append('Authorization', `key=${serverKey}`);
-
-  //       var raw = JSON.stringify({
-  //         registration_ids: user.fcmToken,
-  //         notification: {
-  //           title,
-  //           body,
-  //         },
-  //         data: {
-  //           taskId,
-  //         },
-  //       });
-
-  //       var requestOptions: any = {
-  //         method: 'POST',
-  //         headers: myHeaders,
-  //         body: raw,
-  //         redirect: 'follow',
-  //       };
-
-  //       fetch('https://fcm.googleapis.com/fcm/send', requestOptions)
-  //         .then(response => response.text())
-  //         .then(result => console.log(result))
-  //         .catch(error => console.log('error', error));
-  //     }
-  //   } catch (error) {
-  //     console.log(error);
-  //   }
-  // };
+  static sendNotification = async ({
+    userId,
+    title,
+    body,
+    taskId,
+  }: {
+    userId: string;
+    title: string;
+    body: string;
+    taskId: string;
+  }) => {
+    try {
+      const user: any = await userApi.getById(userId);
+      if (user) {
+        const data = {
+          registration_ids: user.fcmToken,
+          notification: {title, body},
+          data: {taskId},
+        };
+        await axios
+          .post('https://fcm.googleapis.com/fcm/send', data, {
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `key=${globalApp.serverKey}`,
+            },
+          })
+          .then((response: any) => response.text())
+          .then(result => console.log(result))
+          .catch(error => console.log('error', error));
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
 }

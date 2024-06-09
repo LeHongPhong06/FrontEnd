@@ -130,7 +130,7 @@ const RequestCompleteScreen = ({route}: any) => {
             <AvatarComponent url={item.task.userPerformTask.avatar} size={60} />
             <RowComponent direction="column" gap={6} flex={1}>
               <TextComponent
-                text={item.task.userPerformTask.fullName}
+                text={`Người đảm nhiệm: ${item.task.userPerformTask.fullName}`}
                 numberOfLines={1}
               />
               <TextComponent
@@ -147,7 +147,7 @@ const RequestCompleteScreen = ({route}: any) => {
               />
               <TextComponent
                 text={`Thời gian yêu cầu: ${formatDateStringTimes(
-                  item.createAt,
+                  item?.createAt,
                 )}`}
                 size={13}
                 color={colors.gray}
@@ -189,7 +189,7 @@ const RequestCompleteScreen = ({route}: any) => {
                       size={13}
                       flex={1}
                       text={`Đã xác nhận: ${formatDateStringTimes(
-                        item.confirmAt ?? Date.now(),
+                        item.confirmAt,
                       )}`}
                     />
                     <CloseSquare

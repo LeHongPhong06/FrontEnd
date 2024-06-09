@@ -1,3 +1,9 @@
+import storage from '@react-native-firebase/storage';
+import {useMutation, useQuery, useQueryClient} from '@tanstack/react-query';
+import {ArrowRight2} from 'iconsax-react-native';
+import React, {useState} from 'react';
+import {Alert, Dimensions, StyleSheet} from 'react-native';
+import {DocumentPickerResponse} from 'react-native-document-picker';
 import {requestCompleteApi, taskApi} from '../../apis';
 import {
   AvatarComponent,
@@ -18,12 +24,6 @@ import {
   getFilePath,
   isDateSameOrBefore,
 } from '../../utils';
-import storage from '@react-native-firebase/storage';
-import {useMutation, useQuery, useQueryClient} from '@tanstack/react-query';
-import {ArrowRight2} from 'iconsax-react-native';
-import React, {useState} from 'react';
-import {Alert, Dimensions, StyleSheet} from 'react-native';
-import {DocumentPickerResponse} from 'react-native-document-picker';
 
 const TaskWorkDetailScreen = ({navigation, route}: any) => {
   const {taskId} = route.params;

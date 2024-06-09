@@ -6,6 +6,7 @@ export const navigator = {
   WORK_NAVIGATOR: 'work_navigator',
   WORKPLACE_NAVIGATOR: 'workplace_navigator',
   MAIN_NAVIGATOR: 'main_navigator',
+  AUTH_NAVIGATOR: 'auth_navigator',
   TABS_NAVIGATOR: 'tabs_navigator',
   TABSADMIN_NAVIGATOR: 'tabsadmin_navigator',
   ADDWORK_NAVIGATOR: 'addwork_navigator',

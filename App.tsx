@@ -9,8 +9,13 @@ import {NavigationContainer} from '@react-navigation/native';
 import {QueryClient, QueryClientProvider} from '@tanstack/react-query';
 import dayjs from 'dayjs';
 import 'dayjs/locale/vi';
-import React from 'react';
-import {PermissionsAndroid, StatusBar, StyleSheet} from 'react-native';
+import React, {useEffect} from 'react';
+import {
+  PermissionsAndroid,
+  Platform,
+  StatusBar,
+  StyleSheet,
+} from 'react-native';
 import {GestureHandlerRootView} from 'react-native-gesture-handler';
 import {Host} from 'react-native-portalize';
 import {Provider} from 'react-redux';
@@ -19,10 +24,18 @@ import RootRouter from './src/routers/RootRouter';
 const queryClient = new QueryClient();
 dayjs.locale('vi');
 function App(): React.JSX.Element {
-  // useEffect(() => {
-  PermissionsAndroid.request(PermissionsAndroid.PERMISSIONS.POST_NOTIFICATIONS);
-  //   HandleNotification.checkNotificationPersion();
-  // }, []);
+  const requestPermissions = async () => {
+    if (Platform.OS === 'android') {
+      PermissionsAndroid.requestMultiple([
+        PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE,
+        PermissionsAndroid.PERMISSIONS.READ_EXTERNAL_STORAGE,
+      ]);
+    }
+  };
+  useEffect(() => {
+    requestPermissions();
+    // HandleNotification.checkNotificationPersion();
+  }, []);
   return (
     <>
       <GestureHandlerRootView style={stylse.rootView}>

@@ -1,6 +1,6 @@
-import {View, StyleSheet, ActivityIndicator, Modal} from 'react-native';
 import React, {ReactNode} from 'react';
-import {RowComponent, TextComponent} from '.';
+import {ActivityIndicator, Modal, StyleSheet, View} from 'react-native';
+import {RowComponent} from '.';
 import {colors} from '../constants';
 
 interface Props {
@@ -9,7 +9,7 @@ interface Props {
   contentLoad?: ReactNode;
 }
 const ModalLoading = (props: Props) => {
-  const {isVisable, text, contentLoad} = props;
+  const {isVisable} = props;
   return (
     <Modal
       visible={isVisable}
@@ -20,8 +20,6 @@ const ModalLoading = (props: Props) => {
       <View style={styles.wapper}>
         <RowComponent direction="column" gap={10} align="center">
           <ActivityIndicator color={colors.white} size={35} />
-          <TextComponent text={text ?? 'Đang tải...'} color={colors.white} />
-          {contentLoad && contentLoad}
         </RowComponent>
       </View>
     </Modal>

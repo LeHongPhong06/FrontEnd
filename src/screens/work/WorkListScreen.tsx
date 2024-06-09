@@ -29,11 +29,26 @@ const WorkListScreen = ({navigation}: any) => {
   const [workType, setWorkType] = useState('');
   const titleProject = useAppDedounce(search);
   const listWorkType = [
-    {id: '', title: 'Tất cả'},
-    {id: 'unfinished', title: 'Chưa hoàn thành'},
-    {id: 'finished', title: 'Hoàn thành'},
-    {id: 'completedlate', title: 'Hoàn thành trễ hạn'},
-    {id: 'late', title: 'Trễ hạn'},
+    {
+      title: 'Tất cả',
+      value: '',
+    },
+    {
+      title: 'Không',
+      value: 'Không',
+    },
+    {
+      title: 'Thấp',
+      value: 'Thấp',
+    },
+    {
+      title: 'Trung bình',
+      value: 'Trung bình',
+    },
+    {
+      title: 'Cao',
+      value: 'Cao',
+    },
   ];
   const page = 1;
   const {data, isLoading, refetch} = useQuery({
@@ -77,11 +92,11 @@ const WorkListScreen = ({navigation}: any) => {
       <SectionComponent>
         <FlatList
           horizontal
-          keyExtractor={item => String(item.id)}
+          keyExtractor={item => String(item.title)}
           showsHorizontalScrollIndicator={false}
           data={listWorkType}
           renderItem={({item}) => {
-            const isSelected = workType === item.id;
+            const isSelected = workType === item.value;
             return (
               <TouchableOpacity
                 style={[
@@ -91,7 +106,7 @@ const WorkListScreen = ({navigation}: any) => {
                   },
                   styles.category,
                 ]}
-                onPress={() => handlePressCategory(item.id)}>
+                onPress={() => handlePressCategory(item.value)}>
                 <TextComponent
                   text={item.title}
                   color={isSelected ? colors.white : colors.text}

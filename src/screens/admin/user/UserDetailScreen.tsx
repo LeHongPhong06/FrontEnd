@@ -41,12 +41,12 @@ const UserDetailScreen = ({navigation, route}: any) => {
     return <ModalLoading isVisable={isLoading} />;
   }
   const handleUpdateUser = () => {
-    navigation.navigate(screens.UPDATEUSER_SCREEN, {data});
+    navigation.navigate(screens.UPDATEUSER_SCREEN, {data: data.user});
   };
   const handleDeleteUser = () => {
     Alert.alert(
       'Xác nhận',
-      `Bạn có chắc muốn xóa người dùng ${data.fullName}`,
+      `Bạn có chắc muốn xóa người dùng ${data.user.fullName}`,
       [
         {
           text: 'Đóng',
@@ -66,24 +66,24 @@ const UserDetailScreen = ({navigation, route}: any) => {
         <SectionComponent>
           <RowComponent direction="column" gap={16}>
             <RowComponent align="center" gap={12}>
-              <AvatarComponent size={50} url={data.avatar} />
+              <AvatarComponent size={50} url={data.user.avatar} />
               <TextComponent
-                text={data.fullName}
+                text={data.user.fullName}
                 font={fontFamily.semibold}
                 size={18}
               />
             </RowComponent>
-            <TextComponent text={`Email: ${data.email}`} size={16} />
+            <TextComponent text={`Email: ${data.user.email}`} size={16} />
             <TextComponent
-              text={`Số điện thoại: ${data.phoneNumber}`}
+              text={`Số điện thoại: ${data.user.phoneNumber}`}
               size={16}
             />
             <TextComponent
-              text={`Bộ môn: ${data.workplace?.name ?? 'Chưa tham gia'}`}
+              text={`Bộ môn: ${data.user.workplace?.name ?? 'Chưa tham gia'}`}
               size={16}
             />
             <TextComponent
-              text={`Chức vụ: ${getRoleName(data.roleId)}`}
+              text={`Chức vụ: ${getRoleName(data.user.roleId)}`}
               size={16}
             />
           </RowComponent>

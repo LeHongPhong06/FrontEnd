@@ -15,4 +15,11 @@ export const statisticApi = {
       return res.data;
     } catch (error) {}
   },
+  getStatisticAboutDate: async (payload: any) => {
+    const url = 'statistic/date';
+    try {
+      const res = await instance.post(url, payload);
+      return res.data;
+    } catch (error) {}
+  },
 };

@@ -1,3 +1,7 @@
+import {Add} from 'iconsax-react-native';
+import React, {useState} from 'react';
+import {StyleSheet} from 'react-native';
+import {globalStyles} from '../../assets';
 import {
   ButtonTextComponent,
   ContainerComponent,
@@ -8,10 +12,6 @@ import {
 } from '../../components';
 import {categoryWorkpalce, colors, screens} from '../../constants';
 import {useAppSelector} from '../../hooks';
-import {globalStyles} from 'assets';
-import {Add} from 'iconsax-react-native';
-import React, {useState} from 'react';
-import {StyleSheet} from 'react-native';
 import InfoWorkplace from './InfoWorkplace';
 import TeacherList from './TeacherList';
 

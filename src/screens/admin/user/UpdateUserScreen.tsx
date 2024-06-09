@@ -5,6 +5,7 @@ import {userApi} from '../../../apis';
 import {
   ButtonTextComponent,
   ContainerAdminComponent,
+  DropdownRoleComponent,
   InputComponent,
   ModalLoading,
   SectionComponent,
@@ -20,6 +21,7 @@ const UpdateUserScreen = ({navigation, route}: any) => {
     fullName: '',
     phoneNumber: '',
     workplaceId: '',
+    roleId: '',
     password: '',
   };
   useEffect(() => {
@@ -28,7 +30,7 @@ const UpdateUserScreen = ({navigation, route}: any) => {
     }
   }, [data]);
   const [user, setUser] = useState(initialState);
-  const {fullName, phoneNumber, workplaceId, password} = user;
+  const {fullName, phoneNumber, workplaceId, password, roleId} = user;
   const handleChangeValue = (id: string, val: string) => {
     const dataChage: any = {...user};
     dataChage[`${id}`] = val;
@@ -52,11 +54,12 @@ const UpdateUserScreen = ({navigation, route}: any) => {
   });
   return (
     <>
-      <ContainerAdminComponent back title="Cập nhật thông tin">
+      <ContainerAdminComponent back title="Cập nhật thông tin" isScroll>
         <SectionComponent>
           <InputComponent
             value={fullName}
             lable="Họ và tên"
+            allowClear
             placeholder="Nguyen Van A"
             onChange={val => handleChangeValue('fullName', val)}
           />
@@ -64,6 +67,7 @@ const UpdateUserScreen = ({navigation, route}: any) => {
             lable="Số điện thoại"
             value={phoneNumber}
             placeholder="+ 84"
+            allowClear
             onChange={val => handleChangeValue('phoneNumber', val)}
           />
           <WorkplacePickerComponent
@@ -71,8 +75,14 @@ const UpdateUserScreen = ({navigation, route}: any) => {
             value={workplaceId}
             onSelect={val => handleChangeValue('workplaceId', val)}
           />
+          <DropdownRoleComponent
+            label="Chức vụ"
+            value={roleId}
+            onSeclect={val => handleChangeValue('roleId', val)}
+          />
           <InputComponent
             lable="Mật khẩu"
+            isPassword
             value={password}
             onChange={val => handleChangeValue('password', val)}
           />

@@ -23,7 +23,7 @@ export const requestCompleteApi = {
   acceptRequest: async (payload: AcceptRequestComplete): Promise<any> => {
     const url = 'request-complete/accept';
     try {
-      const res = await instance.post(url, payload);
+      const res = await instance.patch(url, payload);
       return res.data;
     } catch (error: any) {
       throw new Error(error);
@@ -32,7 +32,7 @@ export const requestCompleteApi = {
   refuseRequest: async (payload: AcceptRequestComplete): Promise<any> => {
     const url = 'request-complete/refuse';
     try {
-      const res = await instance.post(url, payload);
+      const res = await instance.patch(url, payload);
       return res.data;
     } catch (error: any) {
       throw new Error(error);

@@ -10,7 +10,6 @@ import {
 } from '.';
 import {globalStyles} from '../assets';
 import {colors} from '../constants';
-import {AlertError, isDateSameOrAfter} from '../utils';
 interface Props {
   lable?: string;
   value: Date;
@@ -31,13 +30,8 @@ const DatePickerComponent = (props: Props) => {
     setOpenModal(true);
   };
   const handleConfirmSelectDate = () => {
-    const isDateCorrect = isDateSameOrAfter(dateSelect, Date.now());
-    if (isDateCorrect) {
-      onSelect(dateSelect);
-      setOpenModal(false);
-    } else {
-      AlertError('Bạn không thể chọn ngày trong quá khứ');
-    }
+    onSelect(dateSelect);
+    setOpenModal(false);
   };
   const handleCloseDatePicker = () => {
     setOpenModal(false);

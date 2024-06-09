@@ -103,17 +103,6 @@ const InfoWorkplace = () => {
         direction="column"
         align="center"
         gap={10}>
-        <TextComponent
-          text="Quét mã QR Code hoặc chia sẻ mã bộ môn để các giảng viên khác tham gia"
-          textAlign="center"
-          color={colors.gray4}
-          size={11}
-        />
-        <Image
-          style={styles.qrCode}
-          source={require('../../assets/images/QRcode.png')}
-        />
-        <TextComponent text="Quét mã QR code" size={10} color={colors.gray4} />
         <TextComponent text={data.workplaceId} />
         <ButtonTextComponent
           bgColor={colors.white}

@@ -47,7 +47,6 @@ export const workplaceApi = {
       throw new Error(error);
     }
   },
-
   addMemberByEmail: async (payload: AddMember): Promise<any> => {
     const url = 'workplace/add';
     try {
@@ -57,7 +56,7 @@ export const workplaceApi = {
       throw new Error(error);
     }
   },
-  createWorkplace: async (payload: any) => {
+  createWorkplace: async (payload: any): Promise<any> => {
     const url = 'workplace/create';
     try {
       const res = await instance.post(url, payload);
@@ -66,7 +65,7 @@ export const workplaceApi = {
       throw new Error(error);
     }
   },
-  updateWorkplace: async (workplaceId: string, payload: any) => {
+  updateWorkplace: async (workplaceId: string, payload: any): Promise<any> => {
     const url = `workplace/update/${workplaceId}`;
     try {
       const res = await instance.patch(url, payload);
@@ -75,7 +74,10 @@ export const workplaceApi = {
       throw new Error(error);
     }
   },
-  updateNameWorkplace: async (workplaceId: string, name: string) => {
+  updateNameWorkplace: async (
+    workplaceId: string,
+    name: string,
+  ): Promise<any> => {
     const url = `workplace/update-name/${workplaceId}`;
     try {
       const res = await instance.patch(url, name);
@@ -84,10 +86,31 @@ export const workplaceApi = {
       throw new Error(error);
     }
   },
-  deleteWorkplace: async (workplaceId: string) => {
+  deleteWorkplace: async (workplaceId: string): Promise<any> => {
     const url = `workplace/delete/${workplaceId}`;
     try {
       const res = await instance.delete(url);
+      return res.data;
+    } catch (error: any) {
+      throw new Error(error);
+    }
+  },
+  deletedUserFromWorkplace: async (userId: string): Promise<any> => {
+    const url = 'workplace/deleted-user';
+    try {
+      const res = await instance.patch(url, {userId});
+      return res.data;
+    } catch (error: any) {
+      throw new Error(error);
+    }
+  },
+  franchiseLeader: async (payload: {
+    userIdFranchised: string;
+    leaderId: string;
+  }): Promise<any> => {
+    const url = 'workplace/franchise';
+    try {
+      const res = await instance.patch(url, payload);
       return res.data;
     } catch (error: any) {
       throw new Error(error);

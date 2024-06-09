@@ -6,6 +6,7 @@ export interface WorkplaceType {
   logo?: string;
   total: number;
   leader: UserType;
+  users: UserType[];
 }
 
 export interface AddMember {

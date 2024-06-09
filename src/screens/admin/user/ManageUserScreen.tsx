@@ -16,8 +16,9 @@ import {
   SpaceComponent,
   TextComponent,
 } from '../../../components';
-import {colors, screens} from '../../../constants';
+import {colors, fontFamily, screens} from '../../../constants';
 import {UserType} from '../../../types';
+import {getRoleName} from '../../../utils';
 
 const ManageUserScreen = ({navigation}: any) => {
   const [search, setSearch] = useState('');
@@ -89,16 +90,22 @@ const RenderItem = ({item}: {item: UserType}) => {
   };
   return (
     <RowComponent
-      align="center"
-      gap={12}
+      gap={16}
       onPress={() => handlePressDetail(item.userId)}
       styles={[globalStyles.shadow, styles.wapperRenderItem]}>
-      <AvatarComponent size={50} url={item.avatar} />
-      <RowComponent direction="column" gap={4} flex={1}>
-        <TextComponent text={item.fullName} />
-        <TextComponent text={item.email} numberOfLines={1} />
+      <AvatarComponent size={55} url={item.avatar} />
+      <RowComponent flex={1} align="center">
+        <RowComponent direction="column" gap={4} flex={1}>
+          <TextComponent text={item.fullName} font={fontFamily.semibold} />
+          <TextComponent text={item.email} numberOfLines={1} />
+          <TextComponent text={item.phoneNumber} />
+          <TextComponent
+            text={item.workplace?.name ?? 'Chưa tham gia bộ môn'}
+          />
+          <TextComponent text={getRoleName(item.roleId)} />
+        </RowComponent>
+        <ArrowRight2 size={16} color={colors.gray5} />
       </RowComponent>
-      <ArrowRight2 size={16} color={colors.gray5} />
     </RowComponent>
   );
 };

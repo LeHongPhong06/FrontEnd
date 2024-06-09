@@ -1,4 +1,6 @@
 export interface UserType {
+  dataTaskStatistic: any;
+  user: any;
   userId: string;
   fullName: string;
   email: string;

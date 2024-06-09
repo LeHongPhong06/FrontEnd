@@ -1,3 +1,4 @@
+import {globalApp} from './app';
 import {choisePicker} from './buttonImagePicker';
 import {colors} from './colors';
 import {fontFamily} from './fontFamily';
@@ -12,6 +13,7 @@ export {
   choisePicker,
   colors,
   fontFamily,
+  globalApp,
   navigator,
   priorityList,
   screens,

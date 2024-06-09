@@ -1,24 +1,26 @@
 import {useMutation, useQueryClient} from '@tanstack/react-query';
-import React, {useState} from 'react';
-import {Dimensions, Modal, StyleSheet, View} from 'react-native';
+import React, {useEffect, useRef, useState} from 'react';
+import {StyleSheet, View} from 'react-native';
+import {Modalize} from 'react-native-modalize';
+import {Portal} from 'react-native-portalize';
 import {workplaceApi} from '../apis';
-import {colors} from '../constants';
+import {colors, fontFamily} from '../constants';
 import {AlertError, ShowToast} from '../utils';
 import ButtonTextComponent from './ButtonTextComponent';
 import InputComponent from './InputComponent';
-import RowComponent from './RowComponent';
+import SectionComponent from './SectionComponent';
 import TextComponent from './TextComponent';
 
 interface Props {
-  isVisable: boolean;
   value: string;
   workplaceId: string;
-  onConfirm: () => void;
 }
 const ModalUpdateWorkplace = (props: Props) => {
-  const {isVisable, value, workplaceId, onConfirm} = props;
+  const modalizeRef = useRef<Modalize>(null);
+  const {value, workplaceId} = props;
   const queryClient = useQueryClient();
   const [name, setName] = useState(value);
+  const [isVisibleModalize, setIsVisibleModalize] = useState(false);
   const updateWorkplace = useMutation({
     mutationKey: ['updateWorkplace'],
     mutationFn: () => workplaceApi.updateWorkplace(workplaceId, {name}),
@@ -29,56 +31,88 @@ const ModalUpdateWorkplace = (props: Props) => {
           exact: true,
         });
         ShowToast('Cập nhật bộ môn thành công');
-        onConfirm();
+        modalizeRef.current?.close();
       } else {
         AlertError(res.message ?? 'Cập nhật thất bại');
       }
     },
   });
+  useEffect(() => {
+    if (isVisibleModalize) {
+      modalizeRef.current?.open();
+    }
+  }, [isVisibleModalize]);
+  useEffect(() => {
+    if (value) {
+      setName(value);
+    }
+  }, [value]);
   return (
-    <Modal
-      visible={isVisable}
-      animationType="slide"
-      transparent
-      statusBarTranslucent
-      style={styles.modal}>
-      <View style={styles.wapper}>
-        <RowComponent direction="column" gap={10} styles={styles.container}>
-          <InputComponent
-            value={name}
-            allowClear
-            onChange={val => setName(val)}
-            lable="Tên bộ môn"
-          />
-          <RowComponent align="center" gap={12} justify="flex-end">
-            <TextComponent text={'Đóng'} />
-            <ButtonTextComponent
-              title="Thay đổi"
-              onPress={() => updateWorkplace.mutate()}
-              textColor={colors.white}
+    <>
+      <ButtonTextComponent
+        title="Cập nhật"
+        bgColor={colors.white}
+        onPress={() => setIsVisibleModalize(true)}
+        styles={styles.btnUpdate}
+      />
+      <Portal>
+        <Modalize
+          ref={modalizeRef}
+          adjustToContentHeight
+          handlePosition="inside"
+          onClose={() => setIsVisibleModalize(false)}
+          scrollViewProps={{
+            showsVerticalScrollIndicator: false,
+          }}
+          HeaderComponent={
+            <View style={styles.titleHeader}>
+              <TextComponent
+                text="Tên bộ môn"
+                font={fontFamily.semibold}
+                size={17}
+              />
+            </View>
+          }
+          FooterComponent={
+            <View style={styles.wapperBtnComfirm}>
+              <ButtonTextComponent
+                styles={styles.btnConfirm}
+                title="Đồng ý"
+                onPress={() => updateWorkplace.mutate()}
+                textColor={colors.white}
+              />
+            </View>
+          }>
+          <SectionComponent>
+            <InputComponent
+              value={name}
+              allowClear
+              onChange={val => setName(val)}
             />
-          </RowComponent>
-        </RowComponent>
-      </View>
-    </Modal>
+          </SectionComponent>
+        </Modalize>
+      </Portal>
+    </>
   );
 };
 
 const styles = StyleSheet.create({
-  modal: {
-    flex: 1,
+  titleHeader: {
+    paddingHorizontal: 16,
+    marginTop: 30,
+    marginBottom: 16,
   },
-  wapper: {
-    flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.8)',
+  wapperBtnComfirm: {
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+  },
+  btnConfirm: {
     justifyContent: 'center',
-    alignItems: 'center',
   },
-  container: {
-    width: Dimensions.get('window').width * 0.8,
-    padding: 18,
-    borderRadius: 12,
-    backgroundColor: colors.white,
+  btnUpdate: {
+    flex: 1,
+    justifyContent: 'center',
+    borderRadius: 8,
   },
 });
 export default ModalUpdateWorkplace;

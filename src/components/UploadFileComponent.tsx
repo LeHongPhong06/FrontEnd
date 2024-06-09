@@ -51,9 +51,9 @@ const UploadFileComponent = (props: Props) => {
       <RowComponent
         onPress={handleUploadPicker}
         styles={[globalStyles.inputContainer, style]}
-        align="center"
-        justify="center">
-        <RowComponent styles={styles.wapperFileSeleted} gap={6}>
+        direction="column"
+        justify="flex-start">
+        <RowComponent gap={6} styles={styles.wapperFileSeleted}>
           {filePicker.length > 0 ? (
             filePicker.map(file => (
               <RowComponent

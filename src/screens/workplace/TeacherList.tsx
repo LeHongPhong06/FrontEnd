@@ -1,3 +1,14 @@
+import {useNavigation} from '@react-navigation/native';
+import {useQuery} from '@tanstack/react-query';
+import {ArrowRight2, SearchNormal1} from 'iconsax-react-native';
+import React, {useState} from 'react';
+import {
+  FlatList,
+  RefreshControl,
+  StyleSheet,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 import {workplaceApi} from '../../apis';
 import {globalStyles} from '../../assets';
 import {
@@ -10,21 +21,11 @@ import {
 } from '../../components';
 import {colors, fontFamily, screens} from '../../constants';
 import {useAppDedounce, useAppSelector} from '../../hooks';
-import {useNavigation} from '@react-navigation/native';
-import {useQuery} from '@tanstack/react-query';
-import {ArrowRight2, SearchNormal1} from 'iconsax-react-native';
-import React, {useState} from 'react';
-import {
-  FlatList,
-  RefreshControl,
-  StyleSheet,
-  TouchableOpacity,
-  View,
-} from 'react-native';
 
 const TeacherList = () => {
   const navigation: any = useNavigation();
   const {dataAuth} = useAppSelector(state => state.auth);
+  const isLeader = dataAuth.roleId === 'Leader';
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState('');
   const valueSearch = useAppDedounce(search);
@@ -87,7 +88,7 @@ const TeacherList = () => {
           />
         </View>
       }
-      ListFooterComponent={<SpaceComponent height={100} />}
+      ListFooterComponent={<SpaceComponent height={isLeader ? 100 : 50} />}
       renderItem={({item}) => (
         <TouchableOpacity
           style={[styles.wapperItemTeacher, globalStyles.shadow]}

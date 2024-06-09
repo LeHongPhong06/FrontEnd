@@ -168,6 +168,7 @@ const DropdownPickerComponent = (props: Props) => {
                     />
                     <TextComponent
                       text={item.email}
+                      numberOfLines={1}
                       flex={1}
                       color={userPicker ? colors.primary : colors.text}
                     />

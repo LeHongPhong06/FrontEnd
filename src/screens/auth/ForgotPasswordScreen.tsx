@@ -14,7 +14,7 @@ import {
   TextComponent,
 } from '../../components';
 import {colors, fontFamily, screens} from '../../constants';
-import {ShowToast, Validate} from '../../utils';
+import {AlertError, ShowToast, Validate} from '../../utils';
 
 const ForgotPasswordScreen = ({navigation}: any) => {
   const [isDisabledRegister, setIsDisabledRegister] = useState(true);
@@ -43,6 +43,8 @@ const ForgotPasswordScreen = ({navigation}: any) => {
         ShowToast(
           'Mật khẩu được làm mới thành công, vui lòng kiểm tra trong hòm thư email',
         );
+      } else {
+        AlertError(res.message);
       }
     },
   });
